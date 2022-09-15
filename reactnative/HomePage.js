@@ -6,6 +6,7 @@ import React from 'react'
 import { Button, ScrollView, Text, View } from 'react-native'
 import { Colors, Drawer } from 'react-native-ui-lib'
 import Realm from 'realm'
+import './Global'
 
 /**
  * 所有订阅的未读，想看Item
@@ -22,9 +23,22 @@ const AllSection = () => {
  * 订阅源列表
  */
 const ChannelList = () => {
+    renderList = () => {
+        let list = []
+        for (let item of global.channelLinks) {
+            list.push(
+                <View>
+                    <Text>{item.title}</Text>
+                    <Text>{item.url}</Text>
+                </View>
+            )
+        }
+        return list
+    }
+
     return (
         <View>
-
+            {renderList()}
         </View>
     )
 }
