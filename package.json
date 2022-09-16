@@ -21,6 +21,7 @@
     "react-native-screens": "^3.17.0",
     "react-native-ui-lib": "^6.21.1",
     "react-native-vector-icons": "^9.2.0",
+    "react-native-webview": "^11.23.1",
     "realm": "^10.21.0"
   },
   "devDependencies": {

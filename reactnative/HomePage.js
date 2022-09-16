@@ -8,18 +8,19 @@ import { Badge, ColorName, Colors, Drawer, StackAggregator, ExpandableSection } 
 import Realm from 'realm'
 import './Global'
 import Ionicons from 'react-native-vector-icons/Ionicons'
+import { useNavigation } from '@react-navigation/native'
 
 /**
  * 所有订阅的未读，想看
  */
-const AllSection = () => {
+const AllSection = ({ navigation }) => {
     return (
         <View style={{ marginTop: 24 }}>
             <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#656668', paddingStart: 8 }}>所有订阅</Text>
             <View style={{ width: '100%', height: 113, borderWidth: 1, borderColor: "#e4e4e4", borderRadius: 8, marginTop: 12, backgroundColor: 'white' }}>
                 {/* 未读 */}
                 <TouchableOpacity onPress={() => {
-                    alert('未读')
+                    navigation.navigate('RSSList')
                 }} activeOpacity={0.8} style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingStart: 16, paddingEnd: 16 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         <Ionicons name='mail-unread-outline' size={22} color={'#262626'} />
@@ -33,7 +34,7 @@ const AllSection = () => {
                 <View style={{ width: '100%', height: 1, backgroundColor: '#e4e4e4' }} />
                 {/* 想看 */}
                 <TouchableOpacity onPress={() => {
-                    alert('未读')
+                    navigation.navigate('RSSList')
                 }} activeOpacity={0.8} style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingStart: 16, paddingEnd: 16 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         <Ionicons name='ios-star-outline' size={22} color={'#262626'} />
@@ -55,7 +56,7 @@ const AllSection = () => {
  * 展开的时候 - 展示每个分类的想看/未读
  * 收缩时 - 展示整个分类的想看/未读
  */
-const ChannelList = () => {
+const ChannelList = (props) => {
 
     // TODO mock 数据
     let dataList = [
@@ -99,7 +100,7 @@ const ChannelList = () => {
         let list = []
         for (let item of dataList) {
             list.push(
-                <SectionItem list={item.list} />
+                <SectionItem list={item.list} navigation={props.navigation} />
             )
         }
         return list
@@ -111,13 +112,16 @@ const ChannelList = () => {
     const SectionItem = (props) => {
         const [isExpend, setIsExpend] = useState(true)
         let list = props.list
+        let navigation = props.navigation
         let viewList = []
 
         for (let index = 0; index < list.length; index++) {
             viewList.push(
                 <View style={{ width: '100%' }}>
                     <TouchableOpacity onPress={() => {
-                        alert('未读')
+                        navigation.navigate('RSSList')
+                    }} onLongPress={() => {
+                        navigation.navigate('EditChannel')
                     }} activeOpacity={0.8} style={{ flex: 1, height: 56, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingStart: 16, paddingEnd: 16 }}>
                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                             <Image source={{ uri: 'https://reactnative.dev/docs/assets/p_cat2.png' }} style={{ width: 32, height: 32, backgroundColor: Colors.grey70, borderRadius: 30 }} />
@@ -167,27 +171,31 @@ const ChannelList = () => {
  * 可以添加订阅/查看设置
  * 中间是操作tip, 用来做各种提示
  */
-const ActionBar = () => {
+const ActionBar = ({ navigation }) => {
     return (
         <View style={{ width: '100%', height: 68, backgroundColor: '#f2f2f2', position: 'absolute', bottom: 0 }}>
             <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingStart: 16, paddingEnd: 16 }} >
-                <Ionicons name={'cog-outline'} size={26} />
+                <Ionicons name={'cog-outline'} size={26} onPress={() => {
+                    navigation.navigate('Setting')
+                }} />
                 <Text style={{ fontSize: 12, color: Colors.grey20 }}>我是提示...</Text>
-                <Ionicons name={'add-circle-outline'} size={26} />
+                <Ionicons name={'add-circle-outline'} size={26} onPress={() => {
+                    navigation.navigate('AddChannel')
+                }} />
             </View>
             <View style={{ width: 1, height: 20 }} />
         </View>
     )
 }
 
-const HomePage = () => {
+const HomePage = ({ navigation }) => {
     return (
         <View style={{ flex: 1, backgroundColor: '#f2f2f2' }}>
             <ScrollView style={{ flex: 1, paddingStart: 16, paddingEnd: 16 }}>
-                {AllSection()}
-                {ChannelList()}
+                <AllSection navigation={navigation} />
+                <ChannelList navigation={navigation} />
             </ScrollView>
-            {ActionBar()}
+            <ActionBar navigation={navigation} />
         </View>
     )
 }
