@@ -2,13 +2,14 @@
  * 首页
  * 展示订阅源的列表页
  */
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Button, ScrollView, Text, TouchableOpacity, View, Image } from 'react-native'
 import { Badge, ColorName, Colors, Drawer, StackAggregator, ExpandableSection } from 'react-native-ui-lib'
 import Realm from 'realm'
 import './Global'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 import { useNavigation } from '@react-navigation/native'
+import { ChannelScheme } from './DataBase'
 
 /**
  * 所有订阅的未读，想看
@@ -100,7 +101,7 @@ const ChannelList = (props) => {
         let list = []
         for (let item of dataList) {
             list.push(
-                <SectionItem list={item.list} navigation={props.navigation} />
+                <SectionItem list={item.list} navigation={props.navigation} key={item.sectionName}/>
             )
         }
         return list
@@ -117,7 +118,7 @@ const ChannelList = (props) => {
 
         for (let index = 0; index < list.length; index++) {
             viewList.push(
-                <View style={{ width: '100%' }}>
+                <View style={{ width: '100%' }} key={index}>
                     <TouchableOpacity onPress={() => {
                         navigation.navigate('RSSList')
                     }} onLongPress={() => {
@@ -188,7 +189,27 @@ const ActionBar = ({ navigation }) => {
     )
 }
 
+let realm = null
+
 const HomePage = ({ navigation }) => {
+
+    useEffect(() => {
+        getChannelData = async () => {
+            // 获取本地数据库
+            realm = await Realm.open({
+                path: "xiangkan",
+                schema: [ChannelScheme],
+            })
+            const channels = realm.objects("Channel")
+            console.log('save data -> ', channels)
+        }
+        getChannelData()
+
+        return () => {
+            realm && realm.close()
+        }
+    })
+
     return (
         <View style={{ flex: 1, backgroundColor: '#f2f2f2' }}>
             <ScrollView style={{ flex: 1, paddingStart: 16, paddingEnd: 16 }}>
