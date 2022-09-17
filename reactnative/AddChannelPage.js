@@ -112,6 +112,7 @@ const AddView = (props) => {
                             htmlLink: rssData.links[0].url,
                             description: rssData.description,
                             lastUpdated: rssData.lastUpdated,
+                            fold: '',
                             icon: ''
                         })
                         console.log(`保存成功: ${channel.title}`);
@@ -140,7 +141,7 @@ const AddChannelPage = () => {
     const changeStep = (nextStep, data, link) => {
         rssData = data
         xmlLink = link
-        console.log(data)
+        // console.log(data)
         setStep(nextStep)
     }
 

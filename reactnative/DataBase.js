@@ -8,6 +8,7 @@ export const ChannelScheme = {
         htmlLink: 'string',
         description: 'string',
         lastUpdated: 'string',
+        fold: 'string',
         icon: 'string'
     }
 }

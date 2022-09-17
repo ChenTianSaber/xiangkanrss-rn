@@ -2,7 +2,7 @@
  * 首页
  * 展示订阅源的列表页
  */
-import React, { useEffect, useState } from 'react'
+import React, { Component, useEffect, useState } from 'react'
 import { Button, ScrollView, Text, TouchableOpacity, View, Image } from 'react-native'
 import { Badge, ColorName, Colors, Drawer, StackAggregator, ExpandableSection } from 'react-native-ui-lib'
 import Realm from 'realm'
@@ -59,49 +59,33 @@ const AllSection = ({ navigation }) => {
  */
 const ChannelList = (props) => {
 
-    // TODO mock 数据
-    let dataList = [
-        {
-            sectionName: '分类1',
-            list: [
-                {
-                    title: '1'
-                },
-                {
-                    title: '1'
-                },
-                {
-                    title: '1'
-                },
-                {
-                    title: '1'
-                }
-            ]
-        },
-        {
-            sectionName: '分类2',
-            list: [
-                {
-                    title: '1'
-                },
-                {
-                    title: '1'
-                },
-                {
-                    title: '1'
-                },
-                {
-                    title: '1'
-                }
-            ]
+    const { channelList } = props
+
+    // 组装数据
+    const map = new Map()
+    map.set('', [])
+    for (channel of channelList) {
+        if (map.get(channel.fold) == null || map.get(channel.fold) == undefined) {
+            map.set(channel.fold, [channel])
+        } else {
+            let list = map.get(channel.fold)
+            list.push(channel)
+            map.set(channel.fold, list)
         }
-    ]
+    }
+    const dataList = []
+    for (let [key, value] of map) {
+        dataList.push({
+            sectionName: key,
+            list: value
+        })
+    }
 
     renderList = () => {
         let list = []
         for (let item of dataList) {
             list.push(
-                <SectionItem list={item.list} navigation={props.navigation} key={item.sectionName}/>
+                <SectionItem item={item} navigation={props.navigation} key={item.sectionName} />
             )
         }
         return list
@@ -112,11 +96,13 @@ const ChannelList = (props) => {
      */
     const SectionItem = (props) => {
         const [isExpend, setIsExpend] = useState(true)
-        let list = props.list
+        let list = props.item.list
+        let sectionName = props.item.sectionName
         let navigation = props.navigation
         let viewList = []
 
         for (let index = 0; index < list.length; index++) {
+            let data = list[index]
             viewList.push(
                 <View style={{ width: '100%' }} key={index}>
                     <TouchableOpacity onPress={() => {
@@ -125,8 +111,8 @@ const ChannelList = (props) => {
                         navigation.navigate('EditChannel')
                     }} activeOpacity={0.8} style={{ flex: 1, height: 56, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingStart: 16, paddingEnd: 16 }}>
                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            <Image source={{ uri: 'https://reactnative.dev/docs/assets/p_cat2.png' }} style={{ width: 32, height: 32, backgroundColor: Colors.grey70, borderRadius: 30 }} />
-                            <Text style={{ color: '#262626', fontSize: 16, marginStart: 16 }}>{'订阅源的名字'}</Text>
+                            <Image source={{ uri: data.cover }} style={{ width: 32, height: 32, backgroundColor: Colors.grey70, borderRadius: 30 }} />
+                            <Text style={{ color: '#262626', fontSize: 16, marginStart: 16 }}>{data.title}</Text>
                         </View>
                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                             <Text style={{ fontSize: 12, color: Colors.grey20, marginEnd: 8 }}>98</Text>
@@ -146,7 +132,7 @@ const ChannelList = (props) => {
                     expanded={isExpend}
                     sectionHeader={
                         <View style={{ width: '100%', height: 36, paddingStart: 8, paddingEnd: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <Text style={{ fontSize: 16, fontWeight: 'bold', color: Colors.grey1 }}>分类1</Text>
+                            <Text style={{ fontSize: 16, fontWeight: 'bold', color: Colors.grey1 }}>{sectionName ? sectionName : '未分类'}</Text>
                             <Ionicons name={isExpend ? 'ios-chevron-up' : 'ios-chevron-down'} size={20} color={Colors.grey1} />
                         </View>
                     }
@@ -191,9 +177,11 @@ const ActionBar = ({ navigation }) => {
 
 let realm = null
 
-const HomePage = ({ navigation }) => {
+class HomePage extends Component {
 
-    useEffect(() => {
+    state = { channelList: [] }
+
+    componentDidMount() {
         getChannelData = async () => {
             // 获取本地数据库
             realm = await Realm.open({
@@ -202,23 +190,27 @@ const HomePage = ({ navigation }) => {
             })
             const channels = realm.objects("Channel")
             console.log('save data -> ', channels)
+            this.setState({ channelList: channels })
         }
         getChannelData()
+    }
 
-        return () => {
-            realm && realm.close()
-        }
-    })
+    componentWillUnmount() {
+        realm && realm.close()
+    }
 
-    return (
-        <View style={{ flex: 1, backgroundColor: '#f2f2f2' }}>
-            <ScrollView style={{ flex: 1, paddingStart: 16, paddingEnd: 16 }}>
-                <AllSection navigation={navigation} />
-                <ChannelList navigation={navigation} />
-            </ScrollView>
-            <ActionBar navigation={navigation} />
-        </View>
-    )
+    render() {
+        return (
+            <View style={{ flex: 1, backgroundColor: '#f2f2f2' }}>
+                <ScrollView style={{ flex: 1, paddingStart: 16, paddingEnd: 16 }}>
+                    <AllSection navigation={this.props.navigation} />
+                    <ChannelList navigation={this.props.navigation} channelList={this.state.channelList} />
+                </ScrollView>
+                <ActionBar navigation={this.props.navigation} />
+            </View >
+        )
+    }
+
 }
 
 export default HomePage
