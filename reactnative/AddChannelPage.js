@@ -121,11 +121,15 @@ const AddView = (props) => {
 
                         // 保存Item数据
                         for (item of rssData.items) {
+
+                            let content = item.content ? item.content : (item.description ? item.description : "")
+                            let description = content.substring(0, 300)
+
                             let rssItem = realm.create("RSSItem", {
                                 title: item.title,
                                 link: item.links[0].url,
-                                description: item.description ? item.description : '',
-                                content: item.content ? item.content : '',
+                                description: description,
+                                content: content,
                                 author: item.authors[0].name,
                                 published: item.published,
                                 channelXmlLink: xmlLink,
@@ -158,7 +162,7 @@ const AddChannelPage = () => {
     const changeStep = (nextStep, data, link) => {
         rssData = data
         xmlLink = link
-        console.log(data)
+        // console.log(data)
         setStep(nextStep)
     }
 
