@@ -9,7 +9,7 @@ import Realm from 'realm'
 import './Global'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 import { useNavigation } from '@react-navigation/native'
-import { ChannelScheme } from './DataBase'
+import { ChannelScheme, RSSItemScheme } from './DataBase'
 
 /**
  * 所有订阅的未读，想看
@@ -179,18 +179,19 @@ let realm = null
 
 class HomePage extends Component {
 
-    state = { channelList: [] }
+    state = { channelList: [], allItemList: [] }
 
     componentDidMount() {
         getChannelData = async () => {
             // 获取本地数据库
             realm = await Realm.open({
                 path: "xiangkan",
-                schema: [ChannelScheme],
+                schema: [ChannelScheme, RSSItemScheme],
             })
             const channels = realm.objects("Channel")
-            console.log('save data -> ', channels)
-            this.setState({ channelList: channels })
+            const items = realm.objects("RSSItem")
+            console.log('save data -> ', channels, items)
+            this.setState({ channelList: channels, allItemList: items })
         }
         getChannelData()
     }

@@ -9,7 +9,7 @@ import { TextField } from 'react-native-ui-lib/src/incubator'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 import * as rssParser from 'react-native-rss-parser'
 import Realm from "realm"
-import { ChannelScheme } from './DataBase'
+import { ChannelScheme, RSSItemScheme } from './DataBase'
 
 /**
  * 订阅源链接输入框
@@ -85,7 +85,7 @@ const AddView = (props) => {
         openRealm = async () => {
             realm = await Realm.open({
                 path: "xiangkan",
-                schema: [ChannelScheme],
+                schema: [ChannelScheme, RSSItemScheme],
             })
         }
         openRealm()
@@ -100,6 +100,7 @@ const AddView = (props) => {
             <Text style={{ color: Colors.grey1, fontWeight: 'bold', fontSize: 18 }}>{data.title}</Text>
             <Text style={{ color: Colors.grey20, fontSize: 14 }}>{data.description}</Text>
             <Text style={{ color: Colors.grey30, fontSize: 12 }}>{data.links[0].url}</Text>
+            <Text style={{ color: Colors.grey30, fontSize: 12 }}>{data.items[0].authors[0].name}</Text>
 
             <TouchableOpacity activeOpacity={0.7} onPress={async () => {
                 // 添加到数据库
@@ -115,7 +116,23 @@ const AddView = (props) => {
                             fold: '',
                             icon: ''
                         })
+                        // 保存channel
                         console.log(`保存成功: ${channel.title}`);
+
+                        // 保存Item数据
+                        for (item of rssData.items) {
+                            let rssItem = realm.create("RSSItem", {
+                                title: item.title,
+                                link: item.links[0].url,
+                                description: item.description ? item.description : '',
+                                content: item.content ? item.content : '',
+                                author: item.authors[0].name,
+                                published: item.published,
+                                channelXmlLink: xmlLink,
+                                channelTitle: rssData.title,
+                                channelIcon: '',
+                            })
+                        }
                         alert('保存成功')
                     })
                 } catch (e) {
@@ -141,7 +158,7 @@ const AddChannelPage = () => {
     const changeStep = (nextStep, data, link) => {
         rssData = data
         xmlLink = link
-        // console.log(data)
+        console.log(data)
         setStep(nextStep)
     }
 
