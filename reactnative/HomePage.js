@@ -14,7 +14,7 @@ import { ChannelScheme, RSSItemScheme } from './DataBase'
 /**
  * 所有订阅的未读，想看
  */
-const AllSection = ({ navigation }) => {
+const AllSection = ({ navigation, unReadItemsSum, wantReadItemsSum }) => {
     return (
         <View style={{ marginTop: 24 }}>
             <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#656668', paddingStart: 8 }}>所有订阅</Text>
@@ -28,7 +28,7 @@ const AllSection = ({ navigation }) => {
                         <Text style={{ color: '#262626', fontSize: 16, marginStart: 16 }}>{'未读'}</Text>
                     </View>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <Badge label={'999'} size={16} backgroundColor={Colors.red30} />
+                        <Badge label={unReadItemsSum} size={16} backgroundColor={Colors.red30} />
                         <Ionicons name='chevron-forward' size={20} color={Colors.grey30} />
                     </View>
                 </TouchableOpacity>
@@ -42,7 +42,7 @@ const AllSection = ({ navigation }) => {
                         <Text style={{ color: '#262626', fontSize: 16, marginStart: 16 }}>{'想看'}</Text>
                     </View>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <Badge label={'999'} size={16} backgroundColor={Colors.blue30} />
+                        <Badge label={wantReadItemsSum} size={16} backgroundColor={Colors.blue30} />
                         <Ionicons name='chevron-forward' size={20} color={Colors.grey30} />
                     </View>
                 </TouchableOpacity>
@@ -60,16 +60,29 @@ const AllSection = ({ navigation }) => {
 const ChannelList = (props) => {
 
     const { channelList } = props
+    const { unReadItemList } = props
 
     // 组装数据
     const map = new Map()
     map.set('', [])
     for (channel of channelList) {
         if (map.get(channel.fold) == null || map.get(channel.fold) == undefined) {
-            map.set(channel.fold, [channel])
+            let sum = 0
+            for (item of unReadItemList) {
+                if (item.channelTitle == channel.title) {
+                    sum++
+                }
+            }
+            map.set(channel.fold, [{ data: channel, unReadSum: sum }])
         } else {
+            let sum = 0
+            for (item of unReadItemList) {
+                if (item.channelTitle == channel.title) {
+                    sum++
+                }
+            }
             let list = map.get(channel.fold)
-            list.push(channel)
+            list.push({ data: channel, unReadSum: sum })
             map.set(channel.fold, list)
         }
     }
@@ -102,7 +115,8 @@ const ChannelList = (props) => {
         let viewList = []
 
         for (let index = 0; index < list.length; index++) {
-            let data = list[index]
+            let data = list[index].data
+            let unReadSum = list[index].unReadSum
             viewList.push(
                 <View style={{ width: '100%' }} key={index}>
                     <TouchableOpacity onPress={() => {
@@ -111,11 +125,11 @@ const ChannelList = (props) => {
                         navigation.navigate('EditChannel')
                     }} activeOpacity={0.8} style={{ flex: 1, height: 56, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingStart: 16, paddingEnd: 16 }}>
                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            <Image source={{ uri: data.cover }} style={{ width: 32, height: 32, backgroundColor: Colors.grey70, borderRadius: 30 }} />
+                            <Image source={{ uri: data.icon }} style={{ width: 32, height: 32, backgroundColor: Colors.grey80, borderRadius: 30 }} />
                             <Text style={{ color: '#262626', fontSize: 16, marginStart: 16 }}>{data.title}</Text>
                         </View>
                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            <Text style={{ fontSize: 12, color: Colors.grey20, marginEnd: 8 }}>98</Text>
+                            <Text style={{ fontSize: 12, color: Colors.grey20, marginEnd: 8 }}>{unReadSum}</Text>
                             <Ionicons name='chevron-forward' size={20} color={Colors.grey30} />
                         </View>
                     </TouchableOpacity>
@@ -176,10 +190,12 @@ const ActionBar = ({ navigation }) => {
 }
 
 let realm = null
+let unReadItemList = 0
+let wantReadItemList = 0
 
 class HomePage extends Component {
 
-    state = { channelList: [], allItemList: [] }
+    state = { channelList: [], allUnReadItemList: [], allWantReadItemList: [] }
 
     componentDidMount() {
         getChannelData = async () => {
@@ -189,9 +205,14 @@ class HomePage extends Component {
                 schema: [ChannelScheme, RSSItemScheme],
             })
             const channels = realm.objects("Channel")
-            const items = realm.objects("RSSItem")
-            console.log('save data -> ', channels, items.length)
-            this.setState({ channelList: channels, allItemList: items })
+            const wantReadItems = realm.objects("RSSItem").filtered("readState = '2'")
+            const unReadItems = realm.objects("RSSItem").filtered("readState = '0'")
+
+            unReadItemList = unReadItems
+            wantReadItemList = wantReadItems
+
+            console.log('save data -> ', channels, wantReadItems.length, wantReadItems.length)
+            this.setState({ channelList: channels, allUnReadItemList: unReadItems, allWantReadItemList: wantReadItems })
         }
         getChannelData()
     }
@@ -204,8 +225,8 @@ class HomePage extends Component {
         return (
             <View style={{ flex: 1, backgroundColor: '#f2f2f2' }}>
                 <ScrollView style={{ flex: 1, paddingStart: 16, paddingEnd: 16 }}>
-                    <AllSection navigation={this.props.navigation} realm={realm} />
-                    <ChannelList navigation={this.props.navigation} channelList={this.state.channelList} />
+                    <AllSection navigation={this.props.navigation} realm={realm} unReadItemsSum={unReadItemList.length} wantReadItemsSum={wantReadItemList.length} />
+                    <ChannelList navigation={this.props.navigation} channelList={this.state.channelList} unReadItemList={unReadItemList} />
                 </ScrollView>
                 <ActionBar navigation={this.props.navigation} />
             </View >
