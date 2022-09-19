@@ -23,6 +23,8 @@ export const RSSItemScheme = {
         content: 'string',
         author: 'string',
         published: 'string',
+        readState: 'int',
+        readMode: 'int',
         channelXmlLink: 'string',
         channelTitle: 'string',
         channelIcon: 'string',

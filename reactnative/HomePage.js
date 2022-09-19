@@ -21,7 +21,7 @@ const AllSection = ({ navigation }) => {
             <View style={{ width: '100%', height: 113, borderWidth: 1, borderColor: "#e4e4e4", borderRadius: 8, marginTop: 12, backgroundColor: 'white' }}>
                 {/* 未读 */}
                 <TouchableOpacity onPress={() => {
-                    navigation.navigate('RSSList',{realm:realm})
+                    navigation.navigate('RSSList', { realm: realm })
                 }} activeOpacity={0.8} style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingStart: 16, paddingEnd: 16 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         <Ionicons name='mail-unread-outline' size={22} color={'#262626'} />
@@ -167,7 +167,7 @@ const ActionBar = ({ navigation }) => {
                 }} />
                 <Text style={{ fontSize: 12, color: Colors.grey20 }}>我是提示...</Text>
                 <Ionicons name={'add-circle-outline'} size={26} onPress={() => {
-                    navigation.navigate('AddChannel')
+                    navigation.navigate('AddChannel', { realm: realm })
                 }} />
             </View>
             <View style={{ width: 1, height: 20 }} />
@@ -204,7 +204,7 @@ class HomePage extends Component {
         return (
             <View style={{ flex: 1, backgroundColor: '#f2f2f2' }}>
                 <ScrollView style={{ flex: 1, paddingStart: 16, paddingEnd: 16 }}>
-                    <AllSection navigation={this.props.navigation} realm={realm}/>
+                    <AllSection navigation={this.props.navigation} realm={realm} />
                     <ChannelList navigation={this.props.navigation} channelList={this.state.channelList} />
                 </ScrollView>
                 <ActionBar navigation={this.props.navigation} />

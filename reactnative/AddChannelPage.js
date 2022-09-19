@@ -2,7 +2,7 @@
  * 订阅源内容列表
  */
 import React, { useEffect, useRef, useState } from 'react'
-import { View, Text } from 'react-native'
+import { View, Text, Image } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 import { Colors } from 'react-native-ui-lib'
 import { TextField } from 'react-native-ui-lib/src/incubator'
@@ -10,6 +10,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons'
 import * as rssParser from 'react-native-rss-parser'
 import Realm from "realm"
 import { ChannelScheme, RSSItemScheme } from './DataBase'
+import RNFetchBlob from "rn-fetch-blob"
 
 /**
  * 订阅源链接输入框
@@ -58,7 +59,28 @@ const SearchView = (props) => {
                         // 展示订阅源的数据
                         console.log(rss.title);
                         console.log(rss.items.length);
-                        props.changeStep(2, rss, url)
+
+                        // 请求订阅源的icon
+                        let webUrl = rss.links[0].url.split("//")[1].split("?")[0].split("/")[0]
+                        let iconUrl = `https://api.iowen.cn/favicon/${webUrl}.png`
+                        console.log("iconurl -> ", iconUrl)
+
+                        RNFetchBlob.fetch("GET", iconUrl)
+                            .then((res) => {
+                                let status = res.info().status
+                                if (status == 200) {
+                                    let base64Str = res.base64()
+                                    console.log('成功了->', base64Str)
+                                    props.changeStep(2, rss, url, base64Str)
+                                } else {
+                                    console.log('出错了')
+                                }
+                            })
+                            .catch((errorMessage, statusCode) => {
+                                alert('出错了')
+                                console.log(statusCode, errorMessage)
+                            });
+
                     })
                     .catch((error) => {
                         // 出错了
@@ -80,23 +102,11 @@ const AddView = (props) => {
 
     const { rssData, xmlLink } = props
     const [data, setData] = useState(rssData)
-
-    useEffect(() => {
-        openRealm = async () => {
-            realm = await Realm.open({
-                path: "xiangkan",
-                schema: [ChannelScheme, RSSItemScheme],
-            })
-        }
-        openRealm()
-
-        return () => {
-            realm && realm.close()
-        }
-    })
+    const { realm } = props.route.params
 
     return (
         <View style={{ flex: 1, padding: 16 }}>
+            <Image source={{ uri: `data:image/png;base64,${base64Str}` }} style={{ width: 30, height: 30 }} />
             <Text style={{ color: Colors.grey1, fontWeight: 'bold', fontSize: 18 }}>{data.title}</Text>
             <Text style={{ color: Colors.grey20, fontSize: 14 }}>{data.description}</Text>
             <Text style={{ color: Colors.grey30, fontSize: 12 }}>{data.links[0].url}</Text>
@@ -114,7 +124,7 @@ const AddView = (props) => {
                             description: rssData.description,
                             lastUpdated: rssData.lastUpdated,
                             fold: '',
-                            icon: ''
+                            icon: `data:image/png;base64,${base64Str}`
                         })
                         // 保存channel
                         console.log(`保存成功: ${channel.title}`);
@@ -135,6 +145,8 @@ const AddView = (props) => {
                                 channelXmlLink: xmlLink,
                                 channelTitle: rssData.title,
                                 channelIcon: '',
+                                readState: 0,
+                                readMode: 0
                             })
                         }
                         alert('保存成功')
@@ -154,21 +166,23 @@ const AddView = (props) => {
 
 let rssData = null
 let xmlLink = ''
+let base64Str = ''
 
-const AddChannelPage = () => {
+const AddChannelPage = ({ route }) => {
 
     const [step, setStep] = useState(1)
 
-    const changeStep = (nextStep, data, link) => {
+    const changeStep = (nextStep, data, link, base64) => {
         rssData = data
         xmlLink = link
+        base64Str = base64
         // console.log(data)
         setStep(nextStep)
     }
 
     return (
         <View style={{ flex: 1 }}>
-            {step == 1 ? <SearchView changeStep={changeStep} /> : <AddView rssData={rssData} xmlLink={xmlLink} />}
+            {step == 1 ? <SearchView changeStep={changeStep} /> : <AddView rssData={rssData} xmlLink={xmlLink} route={route} />}
         </View>
     )
 }
