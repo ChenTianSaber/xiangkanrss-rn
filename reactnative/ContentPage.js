@@ -48,7 +48,7 @@ const ContentPage = ({ route }) => {
                   <strong class="tag-name--YLIt">${item.channelTitle}</strong>
                 </span>
               </div>
-              <h1><span class="comp-wrapper--QaPk g-comp--ColorTitle">${item.title}</span></h1>
+              <a href="${item.link}"><h1><span class="comp-wrapper--QaPk g-comp--ColorTitle">${item.title}</span></h1></a>
               <div class="meta--xggW"><span class="author--pu_v">${item.author}</span><span class="time--GfTd">${item.published}</span></div>
             </div>
           </div>

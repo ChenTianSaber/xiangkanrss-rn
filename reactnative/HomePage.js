@@ -266,7 +266,7 @@ class HomePage extends Component {
                                                 link: item.links[0].url,
                                                 description: description,
                                                 content: content,
-                                                author: item.authors[0].name,
+                                                author: item.authors[0] ? item.authors[0].name : '',
                                                 published: item.published,
                                                 channelXmlLink: channel.xmlLink,
                                                 channelTitle: rssData.title,

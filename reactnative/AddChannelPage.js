@@ -113,7 +113,7 @@ const AddView = (props) => {
             <Text style={{ color: Colors.grey1, fontWeight: 'bold', fontSize: 18 }}>{data.title}</Text>
             <Text style={{ color: Colors.grey20, fontSize: 14 }}>{data.description}</Text>
             <Text style={{ color: Colors.grey30, fontSize: 12 }}>{data.links[0].url}</Text>
-            <Text style={{ color: Colors.grey30, fontSize: 12 }}>{data.items[0].authors[0].name}</Text>
+            <Text style={{ color: Colors.grey30, fontSize: 12 }}>{data.items[0].authors[0] ? data.items[0].authors[0].name : ''}</Text>
 
             <TouchableOpacity activeOpacity={0.7} onPress={async () => {
                 // 添加到数据库
@@ -150,7 +150,7 @@ const AddView = (props) => {
                                 link: item.links[0].url,
                                 description: description,
                                 content: content,
-                                author: item.authors[0].name,
+                                author: item.authors[0] ? item.authors[0].name : '',
                                 published: item.published,
                                 channelXmlLink: xmlLink,
                                 channelTitle: rssData.title,
