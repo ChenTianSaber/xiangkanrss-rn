@@ -112,7 +112,8 @@ class RSSListPage extends Component {
 
     componentDidMount() {
         realm = this.props.route.params.realm
-        let list = realm.objects("RSSItem")
+        readState = this.props.route.params.readState
+        let list = realm.objects("RSSItem").filtered(`readState = ${readState}`)
         console.log(list.length)
 
         // 组装sectionList

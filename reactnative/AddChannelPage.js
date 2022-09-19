@@ -13,6 +13,7 @@ import { ChannelScheme, RSSItemScheme } from './DataBase'
 import RNFetchBlob from "rn-fetch-blob"
 
 var Cheerio = require('cheerio')
+var moment = require('moment')
 
 /**
  * 订阅源链接输入框
@@ -124,7 +125,7 @@ const AddView = (props) => {
                             xmlLink: xmlLink,
                             htmlLink: rssData.links[0].url,
                             description: rssData.description,
-                            lastUpdated: rssData.lastUpdated,
+                            lastUpdated: moment().format(),
                             fold: '',
                             icon: `data:image/png;base64,${base64Str}`
                         })

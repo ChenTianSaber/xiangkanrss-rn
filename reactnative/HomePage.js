@@ -3,13 +3,17 @@
  * 展示订阅源的列表页
  */
 import React, { Component, useEffect, useState } from 'react'
-import { Button, ScrollView, Text, TouchableOpacity, View, Image } from 'react-native'
+import { Button, ScrollView, Text, TouchableOpacity, View, Image, RefreshControl } from 'react-native'
 import { Badge, ColorName, Colors, Drawer, StackAggregator, ExpandableSection } from 'react-native-ui-lib'
 import Realm from 'realm'
 import './Global'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 import { useNavigation } from '@react-navigation/native'
 import { ChannelScheme, RSSItemScheme } from './DataBase'
+import * as rssParser from 'react-native-rss-parser'
+
+var moment = require('moment')
+var Cheerio = require('cheerio')
 
 /**
  * 所有订阅的未读，想看
@@ -21,28 +25,28 @@ const AllSection = ({ navigation, unReadItemsSum, wantReadItemsSum }) => {
             <View style={{ width: '100%', height: 113, borderWidth: 1, borderColor: "#e4e4e4", borderRadius: 8, marginTop: 12, backgroundColor: 'white' }}>
                 {/* 未读 */}
                 <TouchableOpacity onPress={() => {
-                    navigation.navigate('RSSList', { realm: realm })
+                    navigation.navigate('RSSList', { realm: realm, readState: 0 })
                 }} activeOpacity={0.8} style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingStart: 16, paddingEnd: 16 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         <Ionicons name='mail-unread-outline' size={22} color={'#262626'} />
                         <Text style={{ color: '#262626', fontSize: 16, marginStart: 16 }}>{'未读'}</Text>
                     </View>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <Badge label={unReadItemsSum} size={16} backgroundColor={Colors.red30} />
+                        {unReadItemsSum > 0 ? <Badge label={unReadItemsSum} size={16} backgroundColor={Colors.red30} /> : null}
                         <Ionicons name='chevron-forward' size={20} color={Colors.grey30} />
                     </View>
                 </TouchableOpacity>
                 <View style={{ width: '100%', height: 1, backgroundColor: '#e4e4e4' }} />
                 {/* 想看 */}
                 <TouchableOpacity onPress={() => {
-                    navigation.navigate('RSSList')
+                    navigation.navigate('RSSList', { realm: realm, readState: 2 })
                 }} activeOpacity={0.8} style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingStart: 16, paddingEnd: 16 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         <Ionicons name='ios-star-outline' size={22} color={'#262626'} />
                         <Text style={{ color: '#262626', fontSize: 16, marginStart: 16 }}>{'想看'}</Text>
                     </View>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <Badge label={wantReadItemsSum} size={16} backgroundColor={Colors.blue30} />
+                        {wantReadItemsSum > 0 ? <Badge label={wantReadItemsSum} size={16} backgroundColor={Colors.blue30} /> : null}
                         <Ionicons name='chevron-forward' size={20} color={Colors.grey30} />
                     </View>
                 </TouchableOpacity>
@@ -120,9 +124,9 @@ const ChannelList = (props) => {
             viewList.push(
                 <View style={{ width: '100%' }} key={index}>
                     <TouchableOpacity onPress={() => {
-                        navigation.navigate('RSSList')
+                        // navigation.navigate('RSSList')
                     }} onLongPress={() => {
-                        navigation.navigate('EditChannel')
+                        // navigation.navigate('EditChannel')
                     }} activeOpacity={0.8} style={{ flex: 1, height: 56, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingStart: 16, paddingEnd: 16 }}>
                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                             <Image source={{ uri: data.icon }} style={{ width: 32, height: 32, backgroundColor: Colors.grey80, borderRadius: 30 }} />
@@ -172,14 +176,14 @@ const ChannelList = (props) => {
  * 可以添加订阅/查看设置
  * 中间是操作tip, 用来做各种提示
  */
-const ActionBar = ({ navigation }) => {
+const ActionBar = ({ navigation, tip }) => {
     return (
         <View style={{ width: '100%', height: 68, backgroundColor: '#f2f2f2', position: 'absolute', bottom: 0 }}>
             <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingStart: 16, paddingEnd: 16 }} >
                 <Ionicons name={'cog-outline'} size={26} onPress={() => {
                     navigation.navigate('Setting')
                 }} />
-                <Text style={{ fontSize: 12, color: Colors.grey20 }}>我是提示...</Text>
+                <Text style={{ fontSize: 12, color: Colors.grey20 }}>{tip}</Text>
                 <Ionicons name={'add-circle-outline'} size={26} onPress={() => {
                     navigation.navigate('AddChannel', { realm: realm })
                 }} />
@@ -190,12 +194,13 @@ const ActionBar = ({ navigation }) => {
 }
 
 let realm = null
-let unReadItemList = 0
-let wantReadItemList = 0
+let unReadItemList = []
+let wantReadItemList = []
+let allChannelList = []
 
 class HomePage extends Component {
 
-    state = { channelList: [], allUnReadItemList: [], allWantReadItemList: [] }
+    state = { channelList: [], allUnReadItemList: [], allWantReadItemList: [], refreshing: false, tip: '' }
 
     componentDidMount() {
         getChannelData = async () => {
@@ -208,11 +213,12 @@ class HomePage extends Component {
             const wantReadItems = realm.objects("RSSItem").filtered("readState = '2'")
             const unReadItems = realm.objects("RSSItem").filtered("readState = '0'")
 
+            allChannelList = channels
             unReadItemList = unReadItems
             wantReadItemList = wantReadItems
 
-            console.log('save data -> ', channels, wantReadItems.length, wantReadItems.length)
-            this.setState({ channelList: channels, allUnReadItemList: unReadItems, allWantReadItemList: wantReadItems })
+            console.log('save data -> ', channels.length, wantReadItems.length, wantReadItems.length)
+            this.setState({ channelList: channels, allUnReadItemList: unReadItems, allWantReadItemList: wantReadItems, tip: `上次更新于: ${moment(channels[0].lastUpdated).format('YYYY-MM-DD h:mm')}` })
         }
         getChannelData()
     }
@@ -224,11 +230,67 @@ class HomePage extends Component {
     render() {
         return (
             <View style={{ flex: 1, backgroundColor: '#f2f2f2' }}>
-                <ScrollView style={{ flex: 1, paddingStart: 16, paddingEnd: 16 }}>
+                <ScrollView style={{ flex: 1, paddingStart: 16, paddingEnd: 16 }} refreshControl={
+                    <RefreshControl refreshing={this.state.refreshing} onRefresh={async () => {
+                        this.setState({ refreshing: true })
+                        // 刷新订阅源的数据
+                        for (channel of allChannelList) {
+                            this.setState({ tip: `正在更新:${channel.title}[${allChannelList.indexOf(channel) + 1}/${allChannelList.length}]` })
+                            try {
+                                let response = await fetch(channel.xmlLink)
+                                let responseData = await response.text()
+                                let rssData = await rssParser.parse(responseData)
+
+                                console.log('channel rssData请求完毕->', rssData.title)
+
+                                realm.write(() => {
+                                    channel.lastUpdated = moment().format()
+                                })
+
+                                for (item of rssData.items) {
+
+                                    let content = item.content ? item.content : (item.description ? item.description : "")
+                                    let description = content.replace(/<[^>]+>/g, "").replace(/(^\s*)|(\s*$)/g, "").substring(0, 300)
+
+                                    // 获取第一张图当封面
+                                    let htmlParser = Cheerio.load(content)
+                                    let cover = htmlParser('img').attr('src')
+                                    cover = cover ? cover : ''
+
+                                    console.log('cover ->', cover)
+
+                                    try {
+                                        realm.write(() => {
+                                            let rssItem = realm.create("RSSItem", {
+                                                title: item.title,
+                                                link: item.links[0].url,
+                                                description: description,
+                                                content: content,
+                                                author: item.authors[0].name,
+                                                published: item.published,
+                                                channelXmlLink: channel.xmlLink,
+                                                channelTitle: rssData.title,
+                                                channelIcon: channel.icon,
+                                                readState: 0,
+                                                readMode: 0,
+                                                cover: cover
+                                            })
+                                        })
+                                    } catch (e) {
+                                        console.log('该Item存储失败，估计是已存在', item.title, e)
+                                    }
+                                }
+                            } catch (e) {
+                                console.log('更新失败->', channel.title, e)
+                            }
+                        }
+                        this.setState({ refreshing: false })
+                    }} />
+                }>
                     <AllSection navigation={this.props.navigation} realm={realm} unReadItemsSum={unReadItemList.length} wantReadItemsSum={wantReadItemList.length} />
                     <ChannelList navigation={this.props.navigation} channelList={this.state.channelList} unReadItemList={unReadItemList} />
                 </ScrollView>
-                <ActionBar navigation={this.props.navigation} />
+                <ActionBar navigation={this.props.navigation} tip={this.state.tip} />
             </View >
         )
     }
