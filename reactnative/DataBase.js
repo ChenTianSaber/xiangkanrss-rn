@@ -25,6 +25,7 @@ export const RSSItemScheme = {
         published: 'string',
         readState: 'int',
         readMode: 'int',
+        cover: 'string',
         channelXmlLink: 'string',
         channelTitle: 'string',
         channelIcon: 'string',

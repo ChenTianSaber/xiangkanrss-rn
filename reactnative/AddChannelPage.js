@@ -12,6 +12,8 @@ import Realm from "realm"
 import { ChannelScheme, RSSItemScheme } from './DataBase'
 import RNFetchBlob from "rn-fetch-blob"
 
+var Cheerio = require('cheerio')
+
 /**
  * 订阅源链接输入框
  */
@@ -133,7 +135,14 @@ const AddView = (props) => {
                         for (item of rssData.items) {
 
                             let content = item.content ? item.content : (item.description ? item.description : "")
-                            let description = content.substring(0, 300)
+                            let description = content.replace(/<[^>]+>/g, "").replace(/(^\s*)|(\s*$)/g, "").substring(0, 300)
+
+                            // 获取第一张图当封面
+                            let htmlParser = Cheerio.load(content)
+                            let cover = htmlParser('img').attr('src')
+                            cover = cover ? cover : ''
+
+                            console.log('cover ->', cover)
 
                             let rssItem = realm.create("RSSItem", {
                                 title: item.title,
@@ -144,9 +153,10 @@ const AddView = (props) => {
                                 published: item.published,
                                 channelXmlLink: xmlLink,
                                 channelTitle: rssData.title,
-                                channelIcon: '',
+                                channelIcon: `data:image/png;base64,${base64Str}`,
                                 readState: 0,
-                                readMode: 0
+                                readMode: 0,
+                                cover: cover
                             })
                         }
                         alert('保存成功')
