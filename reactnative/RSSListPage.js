@@ -1,9 +1,10 @@
 /**
  * 订阅源内容列表
  */
+import { data } from 'cheerio/lib/api/attributes'
 import React, { Component, useEffect, useState } from 'react'
-import { Button, SectionList, Text, TouchableOpacity, View, Image, DeviceEventEmitter } from 'react-native'
-import { Colors, Drawer } from 'react-native-ui-lib'
+import { SectionList, Text, TouchableOpacity, View, Image, DeviceEventEmitter } from 'react-native'
+import { Button, Colors, Dialog, Drawer, PanningProvider } from 'react-native-ui-lib'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 
 var moment = require('moment')
@@ -125,10 +126,11 @@ const SectionTitle = ({ section }) => {
 }
 
 let realm = null
+let allItemlist = []
 
 class RSSListPage extends Component {
 
-    state = { sectionList: [] }
+    state = { sectionList: [], markAllReadDialog: false }
 
     constructor(props) {
         super(props)
@@ -137,15 +139,15 @@ class RSSListPage extends Component {
     componentDidMount() {
         realm = this.props.route.params.realm
         readState = this.props.route.params.readState
-        let list = realm.objects("RSSItem").filtered(`readState = ${readState}`)
-        console.log(list.length)
+        allItemlist = realm.objects("RSSItem").filtered(`readState = ${readState}`)
+        console.log(allItemlist.length)
 
         // 组装sectionList
         updateSectionData = () => {
             let dataList = []
 
-            for (let i = 0; i < list.length; i++) {
-                let item = list[i]
+            for (let i = 0; i < allItemlist.length; i++) {
+                let item = allItemlist[i]
                 if (i == 0) {
                     dataList.push(
                         {
@@ -155,7 +157,7 @@ class RSSListPage extends Component {
                         }
                     )
                 } else {
-                    if (item.channelTitle == list[i - 1].channelTitle) {
+                    if (item.channelTitle == allItemlist[i - 1].channelTitle) {
                         dataList[dataList.length - 1].data.push(item)
                     } else {
                         dataList.push(
@@ -172,6 +174,18 @@ class RSSListPage extends Component {
             this.setState({ sectionList: dataList })
         }
         updateSectionData()
+
+        // 自定义Header
+        this.props.navigation.setOptions({
+            title: this.props.route.params.title ? this.props.route.params.title : '内容列表',
+            headerRight: () => (
+                <TouchableOpacity activeOpacity={0.9} onPress={() => {
+                    this.setState({ markAllReadDialog: true })
+                }}>
+                    <Text style={{ color: Colors.green30, fontSize: 16 }}>全部已读</Text>
+                </TouchableOpacity>
+            )
+        })
     }
 
     componentWillUnmount() {
@@ -182,6 +196,26 @@ class RSSListPage extends Component {
     render() {
         return (
             <View style={{ flex: 1, backgroundColor: Colors.white }}>
+                <Dialog
+                    visible={this.state.markAllReadDialog}
+                    onDismiss={() => this.setState({ markAllReadDialog: false })}
+                    panDirection={PanningProvider.Directions.DOWN}
+                >
+                    {<View style={{ width: '100%', height: 100, backgroundColor: Colors.white, borderRadius: 8, alignItems: 'center', justifyContent: 'space-between', paddingTop: 16, paddingBottom: 16 }}>
+                        <Text style={{ fontSize: 18, fontWeight: 'bold' }}>是否将全部未读标记为已读？</Text>
+                        <Button label={'是的'} size={Button.sizes.medium} backgroundColor={Colors.red30} onPress={() => {
+                            this.setState({ markAllReadDialog: false })
+                            realm.write(() => {
+                                for (item of allItemlist) {
+                                    // 除去想看的
+                                    if (item.readState == 0) {
+                                        item.readState = 1
+                                    }
+                                }
+                            })
+                        }} />
+                    </View>}
+                </Dialog>
                 <SectionList
                     sections={this.state.sectionList}
                     renderItem={({ item }) => <SectionItem item={item} navigation={this.props.navigation} />}

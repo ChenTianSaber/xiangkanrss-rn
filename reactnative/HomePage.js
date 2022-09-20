@@ -25,7 +25,7 @@ const AllSection = ({ navigation, unReadItemsSum, wantReadItemsSum }) => {
             <View style={{ width: '100%', height: 113, borderWidth: 1, borderColor: "#e4e4e4", borderRadius: 8, marginTop: 12, backgroundColor: 'white' }}>
                 {/* 未读 */}
                 <TouchableOpacity onPress={() => {
-                    navigation.navigate('RSSList', { realm: realm, readState: 0 })
+                    navigation.navigate('RSSList', { realm: realm, readState: 0, title: '所有未读' })
                 }} activeOpacity={0.8} style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingStart: 16, paddingEnd: 16 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         <Ionicons name='mail-unread' size={22} color={Colors.blue30} />
@@ -39,7 +39,7 @@ const AllSection = ({ navigation, unReadItemsSum, wantReadItemsSum }) => {
                 <View style={{ width: '100%', height: 1, backgroundColor: '#e4e4e4' }} />
                 {/* 想看 */}
                 <TouchableOpacity onPress={() => {
-                    navigation.navigate('RSSList', { realm: realm, readState: 2 })
+                    navigation.navigate('RSSList', { realm: realm, readState: 2, title: '所有想看' })
                 }} activeOpacity={0.8} style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingStart: 16, paddingEnd: 16 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         <Ionicons name='ios-star' size={22} color={Colors.yellow30} />

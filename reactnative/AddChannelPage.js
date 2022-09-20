@@ -2,7 +2,7 @@
  * 订阅源内容列表
  */
 import React, { useEffect, useRef, useState } from 'react'
-import { View, Text, Image } from 'react-native'
+import { View, Text, Image, DeviceEventEmitter } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 import { Colors } from 'react-native-ui-lib'
 import { TextField } from 'react-native-ui-lib/src/incubator'
@@ -145,22 +145,27 @@ const AddView = (props) => {
 
                             console.log('cover ->', cover)
 
-                            let rssItem = realm.create("RSSItem", {
-                                title: item.title,
-                                link: item.links[0].url,
-                                description: description,
-                                content: content,
-                                author: item.authors[0] ? item.authors[0].name : '',
-                                published: item.published ? item.published : moment().format(),
-                                channelXmlLink: xmlLink,
-                                channelTitle: rssData.title,
-                                channelIcon: `data:image/png;base64,${base64Str}`,
-                                readState: 0,
-                                readMode: 0,
-                                cover: cover
-                            })
+                            try {
+                                let rssItem = realm.create("RSSItem", {
+                                    title: item.title,
+                                    link: item.links[0].url,
+                                    description: description,
+                                    content: content,
+                                    author: item.authors[0] ? item.authors[0].name : '',
+                                    published: item.published ? item.published : moment().format(),
+                                    channelXmlLink: xmlLink,
+                                    channelTitle: rssData.title,
+                                    channelIcon: `data:image/png;base64,${base64Str}`,
+                                    readState: 0,
+                                    readMode: 0,
+                                    cover: cover
+                                })
+                            } catch (e) {
+                                console.log('失败->', e)
+                            }
                         }
                         alert('保存成功')
+                        DeviceEventEmitter.emit('REFRESH')
                     })
                 } catch (e) {
                     console.log('保存失败', e)
