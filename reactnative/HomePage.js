@@ -176,21 +176,26 @@ const ChannelList = (props) => {
  * 可以添加订阅/查看设置
  * 中间是操作tip, 用来做各种提示
  */
-const ActionBar = ({ navigation, tip }) => {
-    return (
-        <View style={{ width: '100%', height: 68, backgroundColor: '#f2f2f2', position: 'absolute', bottom: 0 }}>
-            <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingStart: 16, paddingEnd: 16 }} >
-                <Ionicons name={'cog-outline'} size={26} onPress={() => {
-                    navigation.navigate('Setting')
-                }} />
-                <Text style={{ fontSize: 12, color: Colors.grey20 }}>{tip}</Text>
-                <Ionicons name={'add-circle-outline'} size={26} onPress={() => {
-                    navigation.navigate('AddChannel', { realm: realm })
-                }} />
+class ActionBar extends Component {
+
+    state = { tipView: null }
+
+    render() {
+        return (
+            <View style={{ width: '100%', height: 68, backgroundColor: '#f2f2f2', position: 'absolute', bottom: 0 }}>
+                <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingStart: 16, paddingEnd: 16 }} >
+                    <Ionicons name={'cog-outline'} size={26} onPress={() => {
+                        this.props.navigation.navigate('Setting')
+                    }} />
+                    <View>{this.state.tipView}</View>
+                    <Ionicons name={'add-circle-outline'} size={26} onPress={() => {
+                        this.props.navigation.navigate('AddChannel', { realm: realm })
+                    }} />
+                </View>
+                <View style={{ width: 1, height: 20 }} />
             </View>
-            <View style={{ width: 1, height: 20 }} />
-        </View>
-    )
+        )
+    }
 }
 
 let realm = null
@@ -200,7 +205,7 @@ let allChannelList = []
 
 class HomePage extends Component {
 
-    state = { channelList: [], allUnReadItemList: [], allWantReadItemList: [], refreshing: false, tip: '' }
+    state = { channelList: [], allUnReadItemList: [], allWantReadItemList: [], refreshing: false }
 
     componentDidMount() {
         getChannelData = async () => {
@@ -218,13 +223,20 @@ class HomePage extends Component {
             wantReadItemList = wantReadItems
 
             console.log('save data -> ', channels.length, wantReadItems.length, wantReadItems.length)
-            this.setState({ channelList: channels, allUnReadItemList: unReadItems, allWantReadItemList: wantReadItems, tip: `上次更新于: ${moment(channels[0].lastUpdated).format('YYYY-MM-DD h:mm')}` })
+            this.setState({ channelList: channels, allUnReadItemList: unReadItems, allWantReadItemList: wantReadItems })
+            this.updateTipView(
+                <Text>{`上次更新: ${moment(allChannelList[0].lastUpdated).format('YYYY-MM-DD h:mm')}`}</Text>
+            )
         }
         getChannelData()
     }
 
     componentWillUnmount() {
         realm && realm.close()
+    }
+
+    updateTipView = (view) => {
+        this.tipView.setState({ tipView: view })
     }
 
     render() {
@@ -235,7 +247,10 @@ class HomePage extends Component {
                         this.setState({ refreshing: true })
                         // 刷新订阅源的数据
                         for (channel of allChannelList) {
-                            this.setState({ tip: `正在更新:${channel.title}[${allChannelList.indexOf(channel) + 1}/${allChannelList.length}]` })
+                            // 变化TipView
+                            this.updateTipView(
+                                <Text>{`正在更新：[${allChannelList.indexOf(channel) + 1}/${allChannelList.length}]`}</Text>
+                            )
                             try {
                                 let response = await fetch(channel.xmlLink)
                                 let responseData = await response.text()
@@ -257,8 +272,6 @@ class HomePage extends Component {
                                     let cover = htmlParser('img').attr('src')
                                     cover = cover ? cover : ''
 
-                                    console.log('cover ->', cover)
-
                                     try {
                                         realm.write(() => {
                                             let rssItem = realm.create("RSSItem", {
@@ -267,7 +280,7 @@ class HomePage extends Component {
                                                 description: description,
                                                 content: content,
                                                 author: item.authors[0] ? item.authors[0].name : '',
-                                                published: item.published,
+                                                published: item.published ? item.published : moment().format(),
                                                 channelXmlLink: channel.xmlLink,
                                                 channelTitle: rssData.title,
                                                 channelIcon: channel.icon,
@@ -277,20 +290,23 @@ class HomePage extends Component {
                                             })
                                         })
                                     } catch (e) {
-                                        console.log('该Item存储失败，估计是已存在', item.title, e)
+                                        // console.log('该Item存储失败，估计是已存在', item.title, e)
                                     }
                                 }
                             } catch (e) {
-                                console.log('更新失败->', channel.title, e)
+                                // console.log('更新失败->', channel.title, e)
                             }
                         }
+                        this.updateTipView(
+                            <Text>{`更新完毕: ${moment(allChannelList[0].lastUpdated).format('YYYY-MM-DD h:mm')}`}</Text>
+                        )
                         this.setState({ refreshing: false })
                     }} />
                 }>
                     <AllSection navigation={this.props.navigation} realm={realm} unReadItemsSum={unReadItemList.length} wantReadItemsSum={wantReadItemList.length} />
                     <ChannelList navigation={this.props.navigation} channelList={this.state.channelList} unReadItemList={unReadItemList} />
                 </ScrollView>
-                <ActionBar navigation={this.props.navigation} tip={this.state.tip} />
+                <ActionBar ref={(view) => this.tipView = view} navigation={this.props.navigation} />
             </View >
         )
     }

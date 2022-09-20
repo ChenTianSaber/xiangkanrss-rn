@@ -151,7 +151,7 @@ const AddView = (props) => {
                                 description: description,
                                 content: content,
                                 author: item.authors[0] ? item.authors[0].name : '',
-                                published: item.published,
+                                published: item.published ? item.published : moment().format(),
                                 channelXmlLink: xmlLink,
                                 channelTitle: rssData.title,
                                 channelIcon: `data:image/png;base64,${base64Str}`,
