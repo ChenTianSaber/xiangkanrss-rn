@@ -1,9 +1,52 @@
 /**
  * 订阅源内容列表
  */
-import React, { useState } from 'react'
-import { Button, FlatList, Text, TouchableOpacity, View, Image } from 'react-native'
+import React, { Component, useState } from 'react'
+import { Button, FlatList, Text, TouchableOpacity, View, Image, DeviceEventEmitter } from 'react-native'
 import WebView from 'react-native-webview'
+import Ionicons from 'react-native-vector-icons/Ionicons'
+import { Colors } from 'react-native-ui-lib'
+
+var moment = require('moment')
+
+class ActionBar extends Component {
+
+  state = { readState: 0 }
+
+  constructor(props) {
+    super(props)
+  }
+
+  componentDidMount() {
+    this.setState({ readState: this.props.item.readState })
+  }
+
+  render() {
+    const { item } = this.props
+    return (
+      <View style={{ width: '100%', height: 68, backgroundColor: '#f2f2f2', position: 'absolute', bottom: 0 }}>
+        <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingStart: 16, paddingEnd: 16 }} >
+          {this.state.readState == 2 ? <Ionicons name={'ios-star'} size={26} color={Colors.yellow30} onPress={() => {
+            this.setState({ readState: 0 })
+            DeviceEventEmitter.emit('UPDATE_ITEM_READ_STATE', { title: item.title, state: 0 })
+          }} /> : <Ionicons name={'ios-star-outline'} size={26} onPress={() => {
+            this.setState({ readState: 2 })
+            DeviceEventEmitter.emit('UPDATE_ITEM_READ_STATE', { title: item.title, state: 2 })
+          }} />}
+          {/* ellipse ios-star ios-star-outline*/}
+          {this.state.readState == 1 ? <Ionicons name={'ellipse'} size={26} color={Colors.grey40} onPress={() => {
+            this.setState({ readState: 0 })
+            DeviceEventEmitter.emit('UPDATE_ITEM_READ_STATE', { title: item.title, state: 0 })
+          }} /> : <Ionicons name={'ellipse-outline'} size={26} onPress={() => {
+            this.setState({ readState: 1 })
+            DeviceEventEmitter.emit('UPDATE_ITEM_READ_STATE', { title: item.title, state: 1 })
+          }} />}
+        </View>
+        <View style={{ width: 1, height: 20 }} />
+      </View>
+    )
+  }
+}
 
 const ContentPage = ({ route }) => {
 
@@ -49,7 +92,7 @@ const ContentPage = ({ route }) => {
                 </span>
               </div>
               <a href="${item.link}"><h1><span class="comp-wrapper--QaPk g-comp--ColorTitle">${item.title}</span></h1></a>
-              <div class="meta--xggW"><span class="author--pu_v">${item.author}</span><span class="time--GfTd">${item.published}</span></div>
+              <div class="meta--xggW"><span class="author--pu_v">${item.author}</span><span class="time--GfTd">${moment(item.published).format('YYYY-MM-DD h:mm')}</span></div>
             </div>
           </div>
           <div class="page-inner--s_CE">
@@ -81,6 +124,7 @@ const ContentPage = ({ route }) => {
         originWhitelist={['*']}
         source={{ html: html, baseUrl: 'rssstyle/' }}
       />
+      <ActionBar item={item} />
     </View>
   )
 }

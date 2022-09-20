@@ -3,7 +3,7 @@
  * 展示订阅源的列表页
  */
 import React, { Component, useEffect, useState } from 'react'
-import { Button, ScrollView, Text, TouchableOpacity, View, Image, RefreshControl } from 'react-native'
+import { Button, ScrollView, Text, TouchableOpacity, View, Image, RefreshControl, DeviceEventEmitter } from 'react-native'
 import { Badge, ColorName, Colors, Drawer, StackAggregator, ExpandableSection } from 'react-native-ui-lib'
 import Realm from 'realm'
 import './Global'
@@ -28,7 +28,7 @@ const AllSection = ({ navigation, unReadItemsSum, wantReadItemsSum }) => {
                     navigation.navigate('RSSList', { realm: realm, readState: 0 })
                 }} activeOpacity={0.8} style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingStart: 16, paddingEnd: 16 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <Ionicons name='mail-unread-outline' size={22} color={'#262626'} />
+                        <Ionicons name='mail-unread' size={22} color={Colors.blue30} />
                         <Text style={{ color: '#262626', fontSize: 16, marginStart: 16 }}>{'未读'}</Text>
                     </View>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -42,7 +42,7 @@ const AllSection = ({ navigation, unReadItemsSum, wantReadItemsSum }) => {
                     navigation.navigate('RSSList', { realm: realm, readState: 2 })
                 }} activeOpacity={0.8} style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingStart: 16, paddingEnd: 16 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <Ionicons name='ios-star-outline' size={22} color={'#262626'} />
+                        <Ionicons name='ios-star' size={22} color={Colors.yellow30} />
                         <Text style={{ color: '#262626', fontSize: 16, marginStart: 16 }}>{'想看'}</Text>
                     </View>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -229,6 +229,11 @@ class HomePage extends Component {
             )
         }
         getChannelData()
+
+        // 监听刷新
+        DeviceEventEmitter.addListener('REFRESH', () => {
+            getChannelData()
+        })
     }
 
     componentWillUnmount() {
