@@ -224,9 +224,11 @@ class HomePage extends Component {
 
             console.log('save data -> ', channels.length, wantReadItems.length, wantReadItems.length)
             this.setState({ channelList: channels, allUnReadItemList: unReadItems, allWantReadItemList: wantReadItems })
-            this.updateTipView(
-                <Text>{`上次更新: ${moment(allChannelList[0].lastUpdated).format('YYYY-MM-DD h:mm')}`}</Text>
-            )
+            if (allChannelList.length > 0) {
+                this.updateTipView(
+                    <Text>{`上次更新: ${moment(allChannelList[0].lastUpdated).format('YYYY-MM-DD h:mm')}`}</Text>
+                )
+            }
         }
         getChannelData()
 
@@ -247,70 +249,74 @@ class HomePage extends Component {
     render() {
         return (
             <View style={{ flex: 1, backgroundColor: '#f2f2f2' }}>
-                <ScrollView style={{ flex: 1, paddingStart: 16, paddingEnd: 16 }} refreshControl={
-                    <RefreshControl refreshing={this.state.refreshing} onRefresh={async () => {
-                        this.setState({ refreshing: true })
-                        // 刷新订阅源的数据
-                        for (channel of allChannelList) {
-                            // 变化TipView
-                            this.updateTipView(
-                                <Text>{`正在更新：[${allChannelList.indexOf(channel) + 1}/${allChannelList.length}]`}</Text>
-                            )
-                            try {
-                                let response = await fetch(channel.xmlLink)
-                                let responseData = await response.text()
-                                let rssData = await rssParser.parse(responseData)
+                {this.state.channelList.length > 0 ?
+                    <ScrollView style={{ flex: 1, paddingStart: 16, paddingEnd: 16 }} refreshControl={
+                        <RefreshControl refreshing={this.state.refreshing} onRefresh={async () => {
+                            this.setState({ refreshing: true })
+                            // 刷新订阅源的数据
+                            for (channel of allChannelList) {
+                                // 变化TipView
+                                this.updateTipView(
+                                    <Text>{`正在更新：[${allChannelList.indexOf(channel) + 1}/${allChannelList.length}]`}</Text>
+                                )
+                                try {
+                                    let response = await fetch(channel.xmlLink)
+                                    let responseData = await response.text()
+                                    let rssData = await rssParser.parse(responseData)
 
-                                console.log('channel rssData请求完毕->', rssData.title)
+                                    console.log('channel rssData请求完毕->', rssData.title)
 
-                                realm.write(() => {
-                                    channel.lastUpdated = moment().format()
-                                })
+                                    realm.write(() => {
+                                        channel.lastUpdated = moment().format()
+                                    })
 
-                                for (item of rssData.items) {
+                                    for (item of rssData.items) {
 
-                                    let content = item.content ? item.content : (item.description ? item.description : "")
-                                    let description = content.replace(/<[^>]+>/g, "").replace(/(^\s*)|(\s*$)/g, "").substring(0, 300)
+                                        let content = item.content ? item.content : (item.description ? item.description : "")
+                                        let description = content.replace(/<[^>]+>/g, "").replace(/(^\s*)|(\s*$)/g, "").substring(0, 300)
 
-                                    // 获取第一张图当封面
-                                    let htmlParser = Cheerio.load(content)
-                                    let cover = htmlParser('img').attr('src')
-                                    cover = cover ? cover : ''
+                                        // 获取第一张图当封面
+                                        let htmlParser = Cheerio.load(content)
+                                        let cover = htmlParser('img').attr('src')
+                                        cover = cover ? cover : ''
 
-                                    try {
-                                        realm.write(() => {
-                                            let rssItem = realm.create("RSSItem", {
-                                                title: item.title,
-                                                link: item.links[0].url,
-                                                description: description,
-                                                content: content,
-                                                author: item.authors[0] ? item.authors[0].name : '',
-                                                published: item.published ? item.published : moment().format(),
-                                                channelXmlLink: channel.xmlLink,
-                                                channelTitle: rssData.title,
-                                                channelIcon: channel.icon,
-                                                readState: 0,
-                                                readMode: 0,
-                                                cover: cover
+                                        try {
+                                            realm.write(() => {
+                                                let rssItem = realm.create("RSSItem", {
+                                                    title: item.title,
+                                                    link: item.links[0].url,
+                                                    description: description,
+                                                    content: content,
+                                                    author: item.authors[0] ? item.authors[0].name : '',
+                                                    published: item.published ? item.published : moment().format(),
+                                                    channelXmlLink: rssData.xmlLink,
+                                                    channelTitle: rssData.title,
+                                                    channelIcon: rssData.icon,
+                                                    readState: 0,
+                                                    readMode: 0,
+                                                    cover: cover
+                                                })
                                             })
-                                        })
-                                    } catch (e) {
-                                        // console.log('该Item存储失败，估计是已存在', item.title, e)
+                                        } catch (e) {
+                                            // console.log('该Item存储失败，估计是已存在', item.title, e)
+                                        }
                                     }
+                                } catch (e) {
+                                    // console.log('更新失败->', channel.title, e)
                                 }
-                            } catch (e) {
-                                // console.log('更新失败->', channel.title, e)
                             }
-                        }
-                        this.updateTipView(
-                            <Text>{`更新完毕: ${moment(allChannelList[0].lastUpdated).format('YYYY-MM-DD h:mm')}`}</Text>
-                        )
-                        this.setState({ refreshing: false })
-                    }} />
-                }>
-                    <AllSection navigation={this.props.navigation} realm={realm} unReadItemsSum={unReadItemList.length} wantReadItemsSum={wantReadItemList.length} />
-                    <ChannelList navigation={this.props.navigation} channelList={this.state.channelList} unReadItemList={unReadItemList} />
-                </ScrollView>
+                            this.updateTipView(
+                                <Text>{`更新完毕: ${moment(allChannelList[0].lastUpdated).format('YYYY-MM-DD h:mm')}`}</Text>
+                            )
+                            this.setState({ refreshing: false })
+                        }} />
+                    }>
+                        <AllSection navigation={this.props.navigation} realm={realm} unReadItemsSum={unReadItemList.length} wantReadItemsSum={wantReadItemList.length} />
+                        <ChannelList navigation={this.props.navigation} channelList={this.state.channelList} unReadItemList={unReadItemList} />
+                    </ScrollView> :
+                    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                        <Text>这里很空，先点击右下角的按钮添加订阅源吧</Text>
+                    </View>}
                 <ActionBar ref={(view) => this.tipView = view} navigation={this.props.navigation} />
             </View >
         )

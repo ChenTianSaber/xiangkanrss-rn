@@ -78,11 +78,23 @@ import org.apache.tools.ant.taskdefs.condition.Os
  * ]
  */
 
+/**
+ * Realm还不支持Hermes，所以先关闭
+ */
 project.ext.react = [
-    enableHermes: true,  // clean and rebuild if changing
+    enableHermes: false,  // clean and rebuild if changing
 ]
 
 apply from: "../../node_modules/react-native/react.gradle"
+
+/**
+ * 配置图标库
+ */
+project.ext.vectoricons = [
+        iconFontNames: [ 'Ionicons.ttf' ] // Name of the font files you want to copy
+]
+
+apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
 
 /**
  * Set this to true to create two separate APKs instead of one:
@@ -119,7 +131,11 @@ def jscFlavor = 'org.webkit:android-jsc:+'
  * on project.ext.react, JavaScript will not be compiled to Hermes Bytecode
  * and the benefits of using Hermes will therefore be sharply reduced.
  */
-def enableHermes = project.ext.react.get("enableHermes", false);
+//def enableHermes = project.ext.react.get("enableHermes", false);
+/**
+ * Realm还不支持Hermes，所以先关闭
+ */
+def enableHermes = false
 
 /**
  * Architectures to build native code for.
@@ -147,15 +163,15 @@ android {
             externalNativeBuild {
                 cmake {
                     arguments "-DPROJECT_BUILD_DIR=$buildDir",
-                        "-DREACT_ANDROID_DIR=$rootDir/../node_modules/react-native/ReactAndroid",
-                        "-DREACT_ANDROID_BUILD_DIR=$rootDir/../node_modules/react-native/ReactAndroid/build",
-                        "-DNODE_MODULES_DIR=$rootDir/../node_modules",
-                        "-DANDROID_STL=c++_shared"
+                            "-DREACT_ANDROID_DIR=$rootDir/../node_modules/react-native/ReactAndroid",
+                            "-DREACT_ANDROID_BUILD_DIR=$rootDir/../node_modules/react-native/ReactAndroid/build",
+                            "-DNODE_MODULES_DIR=$rootDir/../node_modules",
+                            "-DANDROID_STL=c++_shared"
                 }
             }
             if (!enableSeparateBuildPerCPUArchitecture) {
                 ndk {
-                    abiFilters (*reactNativeArchitectures())
+                    abiFilters(*reactNativeArchitectures())
                 }
             }
         }
@@ -207,7 +223,7 @@ android {
             reset()
             enable enableSeparateBuildPerCPUArchitecture
             universalApk false  // If true, also generate a universal APK
-            include (*reactNativeArchitectures())
+            include(*reactNativeArchitectures())
         }
     }
     signingConfigs {
@@ -257,22 +273,22 @@ dependencies {
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.0.0"
 
     debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}") {
-        exclude group:'com.facebook.fbjni'
+        exclude group: 'com.facebook.fbjni'
     }
 
     debugImplementation("com.facebook.flipper:flipper-network-plugin:${FLIPPER_VERSION}") {
-        exclude group:'com.facebook.flipper'
-        exclude group:'com.squareup.okhttp3', module:'okhttp'
+        exclude group: 'com.facebook.flipper'
+        exclude group: 'com.squareup.okhttp3', module: 'okhttp'
     }
 
     debugImplementation("com.facebook.flipper:flipper-fresco-plugin:${FLIPPER_VERSION}") {
-        exclude group:'com.facebook.flipper'
+        exclude group: 'com.facebook.flipper'
     }
 
     if (enableHermes) {
         //noinspection GradleDynamicVersion
         implementation("com.facebook.react:hermes-engine:+") { // From node_modules
-            exclude group:'com.facebook.fbjni'
+            exclude group: 'com.facebook.fbjni'
         }
     } else {
         implementation jscFlavor
