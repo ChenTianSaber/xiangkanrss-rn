@@ -264,7 +264,7 @@ class HomePage extends Component {
                                     let responseData = await response.text()
                                     let rssData = await rssParser.parse(responseData)
 
-                                    console.log('channel rssData请求完毕->', rssData.title)
+                                    console.log('channel rssData请求完毕->', rssData.title, rssData.items.length)
 
                                     realm.write(() => {
                                         channel.lastUpdated = moment().format()
@@ -298,11 +298,11 @@ class HomePage extends Component {
                                                 })
                                             })
                                         } catch (e) {
-                                            // console.log('该Item存储失败，估计是已存在', item.title, e)
+                                            console.log('该Item存储失败，估计是已存在', item.title, e)
                                         }
                                     }
                                 } catch (e) {
-                                    // console.log('更新失败->', channel.title, e)
+                                    console.log('更新失败->', channel.title, e)
                                 }
                             }
                             this.updateTipView(
