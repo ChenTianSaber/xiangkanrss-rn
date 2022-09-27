@@ -4,7 +4,7 @@ import { ChannelScheme, RSSItemScheme } from './RealmScheme'
 let realm = new Realm({
     path: "xiangkan",
     schema: [ChannelScheme, RSSItemScheme],
-});
+})
 
 /**
  * 查询所有的channels
