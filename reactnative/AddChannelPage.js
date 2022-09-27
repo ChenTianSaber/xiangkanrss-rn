@@ -2,7 +2,7 @@
  * 订阅源内容列表
  */
 import React, { useEffect, useRef, useState } from 'react'
-import { View, Text, Image, DeviceEventEmitter,TouchableOpacity } from 'react-native'
+import { View, Text, Image, DeviceEventEmitter, TouchableOpacity } from 'react-native'
 import { Colors } from 'react-native-ui-lib'
 import { TextField } from 'react-native-ui-lib/src/incubator'
 import Ionicons from 'react-native-vector-icons/Ionicons'
@@ -67,7 +67,9 @@ const SearchView = (props) => {
                         let iconUrl = `https://api.iowen.cn/favicon/${webUrl}.png`
                         console.log("iconurl -> ", iconUrl)
 
-                        RNFetchBlob.fetch("GET", iconUrl)
+                        RNFetchBlob.config({
+                            trusty: true,
+                        }).fetch("GET", iconUrl)
                             .then((res) => {
                                 let status = res.info().status
                                 if (status == 200) {
