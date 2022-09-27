@@ -5,11 +5,9 @@
 import React, { Component, useState } from 'react'
 import { ScrollView, Text, TouchableOpacity, View, Image, RefreshControl, DeviceEventEmitter } from 'react-native'
 import { Badge, Colors, ExpandableSection } from 'react-native-ui-lib'
-
-import './Global'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 import * as rssParser from 'react-native-rss-parser'
-import { insertRSSItem, queryChannels, queryRSSItemByReadState, updateChannelLastUpdated } from './database/RealmManager'
+import { insertRSSItem, queryChannels, queryRSSItemByReadState, updateChannelLastUpdated } from '../database/RealmManager'
 
 var moment = require('moment')
 var cheerio = require('cheerio')
@@ -216,7 +214,7 @@ class HomePage extends Component {
 
         // 监听刷新
         DeviceEventEmitter.addListener('REFRESH', () => {
-            getChannelData()
+            this.getChannelData()
         })
     }
 

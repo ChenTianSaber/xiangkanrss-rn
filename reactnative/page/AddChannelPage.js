@@ -8,7 +8,7 @@ import { TextField } from 'react-native-ui-lib/src/incubator'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 import * as rssParser from 'react-native-rss-parser'
 import RNFetchBlob from "rn-fetch-blob"
-import { insertChannel, insertRSSItem } from './database/RealmManager'
+import { insertChannel, insertRSSItem } from '../database/RealmManager'
 
 var cheerio = require('cheerio')
 var moment = require('moment')

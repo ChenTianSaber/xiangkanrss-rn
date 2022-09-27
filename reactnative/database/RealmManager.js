@@ -30,6 +30,15 @@ const updateChannelLastUpdated = (channel, lastUpdated) => {
 }
 
 /**
+ * 更新RSSItem
+ */
+const updateRSSItemReadState = (item, readState) => {
+    realm.write(() => {
+        item.readState = readState
+    })
+}
+
+/**
  * 插入RSSItem
  */
 const insertRSSItem = (item) => {
@@ -48,5 +57,10 @@ const insertChannel = (channel) => {
 }
 
 export {
-    queryChannels, queryRSSItemByReadState, updateChannelLastUpdated, insertRSSItem, insertChannel
+    queryChannels, 
+    queryRSSItemByReadState, 
+    updateChannelLastUpdated, 
+    insertRSSItem, 
+    insertChannel,
+    updateRSSItemReadState,
 }

@@ -3,14 +3,14 @@
  */
 
 import React from 'react'
-import HomePage from './reactnative/HomePage'
-import RSSListPage from './reactnative/RSSListPage'
+import HomePage from './reactnative/page/HomePage'
+import RSSListPage from './reactnative/page/RSSListPage'
 import { NavigationContainer } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
-import ContentPage from './reactnative/ContentPage'
-import EditChannelPage from './reactnative/EditChannelPage'
-import AddChannelPage from './reactnative/AddChannelPage'
-import SettingPage from './reactnative/SettingPage'
+import ContentPage from './reactnative/page/ContentPage'
+import EditChannelPage from './reactnative/page/EditChannelPage'
+import AddChannelPage from './reactnative/page/AddChannelPage'
+import SettingPage from './reactnative/page/SettingPage'
 
 const Stack = createNativeStackNavigator()
 

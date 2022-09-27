@@ -1,11 +1,11 @@
 /**
  * 订阅源内容列表
  */
-import { data } from 'cheerio/lib/api/attributes'
 import React, { Component, useEffect, useState } from 'react'
 import { SectionList, Text, TouchableOpacity, View, Image, DeviceEventEmitter } from 'react-native'
 import { Button, Colors, Dialog, Drawer, PanningProvider } from 'react-native-ui-lib'
 import Ionicons from 'react-native-vector-icons/Ionicons'
+import { queryRSSItemByReadState, updateRSSItemReadState } from '../database/RealmManager'
 
 var moment = require('moment')
 
@@ -19,9 +19,7 @@ const SectionItem = ({ item, navigation }) => {
                 console.log('找到了')
                 setReadState(data.state)
                 try {
-                    realm.write(() => {
-                        item.readState = data.state
-                    })
+                    updateRSSItemReadState(item, data.state)
                 } catch (e) {
                     console.log(e)
                     alert('失败')
@@ -58,9 +56,7 @@ const SectionItem = ({ item, navigation }) => {
                     text: '想看', background: Colors.yellow30, onPress: () => {
                         setReadState(2)
                         try {
-                            realm.write(() => {
-                                item.readState = 2
-                            })
+                            updateRSSItemReadState(item, 2)
                         } catch (e) {
                             console.log(e)
                             alert('失败')
@@ -72,9 +68,7 @@ const SectionItem = ({ item, navigation }) => {
                     if (readState != 1) {
                         setReadState(1)
                         try {
-                            realm.write(() => {
-                                item.readState = 1
-                            })
+                            updateRSSItemReadState(item, 1)
                         } catch (e) {
                             console.log(e)
                             alert('失败')
@@ -82,9 +76,7 @@ const SectionItem = ({ item, navigation }) => {
                     } else {
                         setReadState(0)
                         try {
-                            realm.write(() => {
-                                item.readState = 0
-                            })
+                            updateRSSItemReadState(item, 0)
                         } catch (e) {
                             console.log(e)
                             alert('失败')
@@ -125,29 +117,26 @@ const SectionTitle = ({ section }) => {
     )
 }
 
-let realm = null
-let allItemlist = []
-
 class RSSListPage extends Component {
 
     state = { sectionList: [], markAllReadDialog: false }
+    allItemlist = []
 
     constructor(props) {
         super(props)
     }
 
     componentDidMount() {
-        realm = this.props.route.params.realm
         readState = this.props.route.params.readState
-        allItemlist = realm.objects("RSSItem").filtered(`readState = ${readState}`)
-        console.log(allItemlist.length)
+        this.allItemlist = queryRSSItemByReadState(readState)
+        console.log(this.allItemlist.length)
 
         // 组装sectionList
         updateSectionData = () => {
             let dataList = []
 
-            for (let i = 0; i < allItemlist.length; i++) {
-                let item = allItemlist[i]
+            for (let i = 0; i < this.allItemlist.length; i++) {
+                let item = this.allItemlist[i]
                 if (i == 0) {
                     dataList.push(
                         {
@@ -157,7 +146,7 @@ class RSSListPage extends Component {
                         }
                     )
                 } else {
-                    if (item.channelTitle == allItemlist[i - 1].channelTitle) {
+                    if (item.channelTitle == this.allItemlist[i - 1].channelTitle) {
                         dataList[dataList.length - 1].data.push(item)
                     } else {
                         dataList.push(
@@ -205,14 +194,14 @@ class RSSListPage extends Component {
                         <Text style={{ fontSize: 18, fontWeight: 'bold' }}>是否将全部未读标记为已读？</Text>
                         <Button label={'是的'} size={Button.sizes.medium} backgroundColor={Colors.red30} onPress={() => {
                             this.setState({ markAllReadDialog: false })
-                            realm.write(() => {
-                                for (item of allItemlist) {
-                                    // 除去想看的
-                                    if (item.readState == 0) {
-                                        item.readState = 1
-                                    }
+
+                            for (item of this.allItemlist) {
+                                // 除去想看的
+                                if (item.readState == 0) {
+                                    item.readState = 1
+                                    updateRSSItemReadState(item, 1)
                                 }
-                            })
+                            }
                         }} />
                     </View>}
                 </Dialog>
