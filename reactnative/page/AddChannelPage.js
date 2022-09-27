@@ -1,18 +1,15 @@
 /**
  * 订阅源内容列表
  */
-import React, { useEffect, useRef, useState } from 'react'
-import { View, Text, Image, DeviceEventEmitter, TextInput } from 'react-native'
-import { TouchableOpacity } from 'react-native-gesture-handler'
+import React, { useEffect, useState } from 'react'
+import { View, Text, Image, DeviceEventEmitter, TouchableOpacity,TextInput } from 'react-native'
 import { Colors } from 'react-native-ui-lib'
-import { TextField } from 'react-native-ui-lib/src/incubator'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 import * as rssParser from 'react-native-rss-parser'
-import Realm from "realm"
-import { ChannelScheme, RSSItemScheme } from './DataBase'
 import RNFetchBlob from "rn-fetch-blob"
+import { insertChannel, insertRSSItem } from '../database/RealmManager'
 
-var Cheerio = require('cheerio')
+var cheerio = require('cheerio')
 var moment = require('moment')
 
 /**
@@ -70,7 +67,9 @@ const SearchView = (props) => {
                         let iconUrl = `https://api.iowen.cn/favicon/${webUrl}.png`
                         console.log("iconurl -> ", iconUrl)
 
-                        RNFetchBlob.fetch("GET", iconUrl)
+                        RNFetchBlob.config({
+                            trusty: true,
+                        }).fetch("GET", iconUrl)
                             .then((res) => {
                                 setIsFetching(false)
                                 let status = res.info().status
@@ -117,13 +116,10 @@ const SearchView = (props) => {
     )
 }
 
-let realm = null
-
 const AddView = (props) => {
 
     const { rssData, xmlLink } = props
     const [data, setData] = useState(rssData)
-    const { realm } = props.route.params
 
     return (
         <View style={{ flex: 1, padding: 16 }}>
@@ -136,55 +132,54 @@ const AddView = (props) => {
             <TouchableOpacity activeOpacity={0.7} onPress={async () => {
                 // 添加到数据库
                 try {
-                    realm.write(() => {
-                        let channel = realm.create("Channel", {
-                            title: rssData.title,
-                            type: rssData.type,
-                            xmlLink: xmlLink,
-                            htmlLink: rssData.links[0].url,
-                            description: rssData.description,
-                            lastUpdated: moment().format(),
-                            fold: '',
-                            icon: `data:image/png;base64,${base64Str}`
-                        })
-                        // 保存channel
-                        console.log(`保存成功: ${channel.title}`);
+                    // 保存channel
+                    let channel = {
+                        title: rssData.title,
+                        type: rssData.type,
+                        xmlLink: xmlLink,
+                        htmlLink: rssData.links[0].url,
+                        description: rssData.description,
+                        lastUpdated: moment().format(),
+                        fold: '',
+                        icon: `data:image/png;base64,${base64Str}`
+                    }
+                    insertChannel(channel)
+                    console.log(`保存成功: ${channel.title}`)
 
-                        // 保存Item数据
-                        for (item of rssData.items) {
+                    // 保存Item数据
+                    for (item of rssData.items) {
 
-                            let content = item.content ? item.content : (item.description ? item.description : "")
-                            let description = content.replace(/<[^>]+>/g, "").replace(/(^\s*)|(\s*$)/g, "").substring(0, 300)
+                        let content = item.content ? item.content : (item.description ? item.description : "")
+                        let description = content.replace(/<[^>]+>/g, "").replace(/(^\s*)|(\s*$)/g, "").substring(0, 300)
 
-                            // 获取第一张图当封面
-                            let htmlParser = Cheerio.load(content)
-                            let cover = htmlParser('img').attr('src')
-                            cover = cover ? cover : ''
+                        // 获取第一张图当封面
+                        let htmlParser = cheerio.load(content)
+                        let cover = htmlParser('img').attr('src')
+                        cover = cover ? cover : ''
 
-                            console.log('cover ->', cover)
+                        console.log('cover ->', cover)
 
-                            try {
-                                let rssItem = realm.create("RSSItem", {
-                                    title: item.title,
-                                    link: item.links[0].url,
-                                    description: description,
-                                    content: content,
-                                    author: item.authors[0] ? item.authors[0].name : '',
-                                    published: item.published ? item.published : moment().format(),
-                                    channelXmlLink: xmlLink,
-                                    channelTitle: rssData.title,
-                                    channelIcon: `data:image/png;base64,${base64Str}`,
-                                    readState: 0,
-                                    readMode: 0,
-                                    cover: cover
-                                })
-                            } catch (e) {
-                                console.log('失败->', e)
-                            }
+                        try {
+                            insertRSSItem({
+                                title: item.title,
+                                link: item.links[0].url,
+                                description: description,
+                                content: content,
+                                author: item.authors[0] ? item.authors[0].name : '',
+                                published: item.published ? item.published : moment().format(),
+                                channelXmlLink: xmlLink,
+                                channelTitle: rssData.title,
+                                channelIcon: `data:image/png;base64,${base64Str}`,
+                                readState: 0,
+                                readMode: 0,
+                                cover: cover
+                            })
+                        } catch (e) {
+                            console.log('失败->', e)
                         }
-                        alert('保存成功')
-                        DeviceEventEmitter.emit('REFRESH')
-                    })
+                    }
+                    alert('保存成功')
+                    DeviceEventEmitter.emit('REFRESH')
                 } catch (e) {
                     console.log('保存失败', e)
                     alert('保存失败')

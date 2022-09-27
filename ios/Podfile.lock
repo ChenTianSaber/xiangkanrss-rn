@@ -72,9 +72,6 @@ PODS:
     - FlipperKit/Core
     - FlipperKit/FlipperKitNetworkPlugin
   - fmt (6.2.1)
-  - GCDWebServer (3.5.4):
-    - GCDWebServer/Core (= 3.5.4)
-  - GCDWebServer/Core (3.5.4)
   - glog (0.3.5)
   - libevent (2.1.12)
   - OpenSSL-Universal (1.1.1100)
@@ -361,8 +358,7 @@ PODS:
     - React-jsi (= 0.70.0)
     - React-logger (= 0.70.0)
     - React-perflogger (= 0.70.0)
-  - RealmJS (10.21.0):
-    - GCDWebServer
+  - RealmJS (11.0.0-rc.2):
     - React
   - rn-fetch-blob (0.12.0):
     - React-Core
@@ -484,7 +480,6 @@ SPEC REPOS:
     - Flipper-RSocket
     - FlipperKit
     - fmt
-    - GCDWebServer
     - libevent
     - OpenSSL-Universal
     - SocketRocket
@@ -588,7 +583,6 @@ SPEC CHECKSUMS:
   Flipper-RSocket: d9d9ade67cbecf6ac10730304bf5607266dd2541
   FlipperKit: cbdee19bdd4e7f05472a66ce290f1b729ba3cb86
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
-  GCDWebServer: 2c156a56c8226e2d5c0c3f208a3621ccffbe3ce4
   glog: 04b94705f318337d7ead9e6d17c019bd9b1f6b1b
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
   OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
@@ -620,7 +614,7 @@ SPEC CHECKSUMS:
   React-RCTVibration: 5499b77c0fd57f346a5f0b36bb79fdb020d17d3e
   React-runtimeexecutor: 80c195ffcafb190f531fdc849dc2d19cb4bb2b34
   ReactCommon: de55f940495d7bf87b5d7bf55b5b15cdd50d7d7b
-  RealmJS: 72a2e69dbadd06192849c8c3644a199aac66f7fc
+  RealmJS: 1a0478d2c2d98da875057b716c69c8d03eef2b3a
   rn-fetch-blob: f065bb7ab7fb48dd002629f8bdcb0336602d3cba
   RNGestureHandler: 920eb17f5b1e15dae6e5ed1904045f8f90e0b11e
   RNReanimated: 60e291d42c77752a0f6d6f358387bdf225a87c6e

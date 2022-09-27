@@ -6601,10 +6601,10 @@ realm-network-transport@^0.7.2:
     abort-controller "^3.0.0"
     node-fetch "^2.6.0"
 
-realm@^10.21.0:
-  version "10.21.0"
-  resolved "https://registry.npmmirror.com/realm/-/realm-10.21.0.tgz#cf4d8dda7a9ec284e9595d7f87b999412f9059d9"
-  integrity sha512-Y0R6PSI4wkyiPTEg3wssRRQegsQgdbYx4+UGN9285KXbND5WWaA/7e8fu8lYVDIGrvbuaXo/Dyj7v96+nxUjUA==
+realm@11.0.0-rc.2:
+  version "11.0.0-rc.2"
+  resolved "https://registry.npmmirror.com/realm/-/realm-11.0.0-rc.2.tgz#d64c10e7acd8f6c34add4c1092b4d72822742613"
+  integrity sha512-b7lMuLaWeRssC+hs46LkArSCr/Ugl600NuxZatbsU7ij3LVcddnBXKOfou25PiBw1oMYViCqZV/rQXd2KcEnpw==
   dependencies:
     "@realm.io/common" "^0.1.4"
     bindings "^1.5.0"
