@@ -2,8 +2,7 @@
  * 订阅源内容列表
  */
 import React, { useEffect, useRef, useState } from 'react'
-import { View, Text, Image, DeviceEventEmitter } from 'react-native'
-import { TouchableOpacity } from 'react-native-gesture-handler'
+import { View, Text, Image, DeviceEventEmitter,TouchableOpacity } from 'react-native'
 import { Colors } from 'react-native-ui-lib'
 import { TextField } from 'react-native-ui-lib/src/incubator'
 import Ionicons from 'react-native-vector-icons/Ionicons'
