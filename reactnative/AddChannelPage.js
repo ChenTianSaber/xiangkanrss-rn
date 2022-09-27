@@ -2,7 +2,7 @@
  * 订阅源内容列表
  */
 import React, { useEffect, useRef, useState } from 'react'
-import { View, Text, Image, DeviceEventEmitter } from 'react-native'
+import { View, Text, Image, DeviceEventEmitter, TextInput } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 import { Colors } from 'react-native-ui-lib'
 import { TextField } from 'react-native-ui-lib/src/incubator'
@@ -31,28 +31,30 @@ const UrlEditTxt = (props) => {
     }
 
     return (
-        <TextField
-            placeholder={'请输入订阅源url'}
-            floatingPlaceholder={true}
-            onChangeText={(text) => setUrl(text)}
-            showCharCounter={false}
-            floatOnFocus={false}
-            containerStyle={{ marginTop: 16 }}
-            fieldStyle={{ backgroundColor: 'white', fontSize: 14, padding: 12, paddingTop: 10, paddingBottom: 10, borderRadius: 8 }}
-            floatingPlaceholderColor={Colors.grey30}
-            floatingPlaceholderStyle={{ height: 42, fontSize: 14 }}
-            color={{ color: Colors.grey1 }}
-            label={url}
-        />
+        <View>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: Colors.grey1, paddingStart: 2, marginTop: 24 }}>请输入订阅源url</Text>
+            <Text style={{ fontSize: 14, color: Colors.grey20, paddingStart: 2, marginTop: 6 }}>如果不知道这个url是什么东西的话，可以先上GitHub了解一下RSSHub这个项目。</Text>
+            <TextInput
+                placeholder={'https://www.ruanyifeng.com/blog/atom.xml'}
+                onChangeText={(text) => setUrl(text)}
+                style={{ backgroundColor: 'white', color: Colors.grey1, fontSize: 14, padding: 12, paddingTop: 10, paddingBottom: 10, borderRadius: 8, marginTop: 24 }}
+                defaultValue={url}
+            />
+        </View>
     )
 }
 
 const SearchView = (props) => {
+
+    const [isFetching, setIsFetching] = useState(false)
+    const { navigation } = props
+
     return (
         <View style={{ flex: 1, backgroundColor: '#f2f2f2', padding: 16 }}>
             <UrlEditTxt onRef={(ref) => (this.editText = ref)} />
             <TouchableOpacity activeOpacity={0.7} onPress={() => {
                 // 获取链接
+                setIsFetching(true)
                 let url = this.editText.getUrl()
                 // 请求链接
                 fetch(url)
@@ -70,29 +72,45 @@ const SearchView = (props) => {
 
                         RNFetchBlob.fetch("GET", iconUrl)
                             .then((res) => {
+                                setIsFetching(false)
                                 let status = res.info().status
                                 if (status == 200) {
                                     let base64Str = res.base64()
                                     console.log('成功了->', base64Str)
-                                    props.changeStep(2, rss, url, base64Str)
+                                    // 组装数据，进入编辑页面
+                                    let channel = {
+                                        title: rss.title,
+                                        type: rss.type,
+                                        xmlLink: url,
+                                        htmlLink: rss.links[0].url,
+                                        description: rss.description,
+                                        lastUpdated: moment().format(),
+                                        fold: '',
+                                        icon: `data:image/png;base64,${base64Str}`
+                                    }
+                                    let items = rss.items
+                                    navigation.navigate('EditChannel', { channel: channel, items: items })
+
                                 } else {
                                     console.log('出错了')
                                 }
                             })
                             .catch((errorMessage, statusCode) => {
+                                setIsFetching(false)
                                 alert('出错了')
                                 console.log(statusCode, errorMessage)
                             });
 
                     })
                     .catch((error) => {
+                        setIsFetching(false)
                         // 出错了
                         alert('出错了')
                         console.log(error)
                     })
-            }} style={{ padding: 10, borderRadius: 8, backgroundColor: Colors.blue40, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 24 }}>
+            }} style={{ padding: 10, borderRadius: 8, backgroundColor: isFetching ? Colors.grey20 : Colors.blue40, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 24 }}>
                 <Ionicons name={'search-outline'} color={Colors.white} size={18} />
-                <Text style={{ fontSize: 16, color: Colors.white, fontWeight: 'bold', marginStart: 8 }}>检测</Text>
+                <Text style={{ fontSize: 16, color: Colors.white, fontWeight: 'bold', marginStart: 8 }}>{isFetching ? '搜寻中...' : '检测'}</Text>
                 <View style={{ width: 18 }} />
             </TouchableOpacity>
         </View>
@@ -180,25 +198,10 @@ const AddView = (props) => {
     )
 }
 
-let rssData = null
-let xmlLink = ''
-let base64Str = ''
-
-const AddChannelPage = ({ route }) => {
-
-    const [step, setStep] = useState(1)
-
-    const changeStep = (nextStep, data, link, base64) => {
-        rssData = data
-        xmlLink = link
-        base64Str = base64
-        // console.log(data)
-        setStep(nextStep)
-    }
-
+const AddChannelPage = ({ route, navigation }) => {
     return (
         <View style={{ flex: 1 }}>
-            {step == 1 ? <SearchView changeStep={changeStep} /> : <AddView rssData={rssData} xmlLink={xmlLink} route={route} />}
+            <SearchView navigation={navigation} />
         </View>
     )
 }

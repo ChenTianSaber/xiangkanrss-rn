@@ -314,8 +314,9 @@ class HomePage extends Component {
                         <AllSection navigation={this.props.navigation} realm={realm} unReadItemsSum={unReadItemList.length} wantReadItemsSum={wantReadItemList.length} />
                         <ChannelList navigation={this.props.navigation} channelList={this.state.channelList} unReadItemList={unReadItemList} />
                     </ScrollView> :
-                    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                        <Text>这里很空，先点击右下角的按钮添加订阅源吧</Text>
+                    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingBottom: 120 }}>
+                        <Text style={{ fontWeight: 'bold', fontSize: 18, color: Colors.grey1 }}>这里很空</Text>
+                        <Text style={{ fontSize: 14, color: Colors.grey1, marginTop: 4 }}>先点击右下角的按钮添加订阅源吧</Text>
                     </View>}
                 <ActionBar ref={(view) => this.tipView = view} navigation={this.props.navigation} />
             </View >
