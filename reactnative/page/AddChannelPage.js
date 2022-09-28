@@ -82,6 +82,7 @@ const SearchView = (props) => {
                                     let channel = {
                                         title: rss.title,
                                         type: rss.type,
+                                        contentType: 0,
                                         xmlLink: url,
                                         htmlLink: rss.links[0].url,
                                         description: rss.description,

@@ -8,7 +8,8 @@ export const ChannelScheme = {
         htmlLink: 'string',
         description: 'string',
         lastUpdated: 'string',
-        readMode: 'int',
+        readMode: 'int', // 0：RSS内容，1：网页模式
+        contentType: 'int', // 0: 文章 1：视频 2：图集
         fold: 'string',
         icon: 'string'
     }
