@@ -2,26 +2,91 @@
  * 订阅源内容列表
  */
 import React, { useState } from 'react'
-import { Button, FlatList, Text, TouchableOpacity, View, Image } from 'react-native'
-import { Colors } from 'react-native-ui-lib'
+import { Text, TouchableOpacity, View, Image, TextInput, DeviceEventEmitter } from 'react-native'
+import { Colors, RadioButton, RadioGroup } from 'react-native-ui-lib'
 import Ionicons from 'react-native-vector-icons/Ionicons'
+import { insertChannel, insertRSSItem } from '../database/RealmManager'
+
+var cheerio = require('cheerio')
 
 const EditChannelPage = (props) => {
 
     const { channel, items } = props.route.params
+    const { navigation } = props
+    const [title, setTitle] = useState(channel.title)
+    const [readMode, setReadMode] = useState(channel.readMode)
 
     return (
         <View style={{ flex: 1, backgroundColor: '#f2f2f2' }}>
-            <View style={{ flex: 1, padding: 16 }}>
-                <Image source={{ uri: channel.icon }} style={{ width: 30, height: 30 }} />
-                <Text style={{ color: Colors.grey1, fontWeight: 'bold', fontSize: 18 }}>{channel.title}</Text>
-                <Text style={{ color: Colors.grey20, fontSize: 14 }}>{channel.description}</Text>
+            <View style={{ flex: 1, padding: 16, alignItems: 'center' }}>
+                <Image source={{ uri: channel.icon }} style={{ width: 46, height: 46, borderRadius: 24 }} />
+                <Text style={{ color: Colors.grey20, fontSize: 14, marginTop: 8 }}>{channel.htmlLink}</Text>
                 <Text style={{ color: Colors.grey30, fontSize: 12 }}>{channel.xmlLink}</Text>
-                <Text style={{ color: Colors.grey30, fontSize: 12 }}>{items[0].authors[0] ? items[0].authors[0].name : ''}</Text>
+                {/* 标题 */}
+                <View style={{ width: '100%', borderWidth: 1, borderColor: "#e4e4e4", borderRadius: 8, marginTop: 12, backgroundColor: 'white', paddingLeft: 6, paddingEnd: 6 }}>
+                    <TextInput
+                        placeholder={'可设置自定义标题'}
+                        onChangeText={(text) => setTitle(text)}
+                        style={{ backgroundColor: 'white', fontSize: 16, borderRadius: 8 }}
+                        defaultValue={title}
+                    />
+                </View>
+                {/* 默认阅读模式 */}
+                <View style={{ width: '100%', marginTop: 24 }}>
+                    <Text style={{ fontSize: 16, fontWeight: 'bold', color: Colors.grey1 }}>默认阅读模式</Text>
+                    <RadioGroup initialValue={readMode} onValueChange={(value) => setReadMode(value)} style={{ flexDirection: 'row', marginTop: 12 }}>
+                        <RadioButton value={0} label={'RSS内容'} />
+                        <RadioButton value={1} label={'网页打开'} style={{ marginStart: 16 }} />
+                    </RadioGroup>
+                </View>
 
                 <TouchableOpacity activeOpacity={0.7} onPress={async () => {
+                    // 添加到数据库
+                    try {
+                        channel.title = title
+                        channel.readMode = readMode
+                        insertChannel(channel)
+                        console.log(`保存成功: ${channel.title}`)
 
-                }} style={{ padding: 10, borderRadius: 8, backgroundColor: Colors.blue40, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 24 }}>
+                        // 保存Item数据
+                        for (let item of items) {
+
+                            let content = item.content ? item.content : (item.description ? item.description : "")
+                            let description = content.replace(/<[^>]+>/g, "").replace(/(^\s*)|(\s*$)/g, "").substring(0, 300)
+
+                            // 获取第一张图当封面
+                            let htmlParser = cheerio.load(content)
+                            let cover = htmlParser('img').attr('src')
+                            cover = cover ? cover : ''
+
+                            console.log('cover ->', cover)
+
+                            try {
+                                insertRSSItem({
+                                    title: item.title,
+                                    link: item.links[0].url,
+                                    description: description,
+                                    content: content,
+                                    author: item.authors[0] ? item.authors[0].name : '',
+                                    published: item.published ? item.published : moment().format(),
+                                    channelXmlLink: channel.xmlLink,
+                                    channelTitle: channel.title,
+                                    channelIcon: channel.icon,
+                                    readState: 0,
+                                    cover: cover
+                                })
+                            } catch (e) {
+                                console.log('失败->', e)
+                            }
+                        }
+                        alert('保存成功')
+                        DeviceEventEmitter.emit('REFRESH')
+                        navigation.pop()
+                    } catch (e) {
+                        console.log('保存失败', e)
+                        alert('保存失败')
+                    }
+                }} style={{ width: '100%', padding: 10, borderRadius: 8, backgroundColor: Colors.blue40, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 24 }}>
                     <Ionicons name={'save-outline'} color={Colors.white} size={18} />
                     <Text style={{ fontSize: 16, color: Colors.white, fontWeight: 'bold', marginStart: 8 }}>保存</Text>
                     <View style={{ width: 18 }} />

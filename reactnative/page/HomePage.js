@@ -286,7 +286,6 @@ class HomePage extends Component {
                             channelTitle: rssData.title,
                             channelIcon: rssData.icon,
                             readState: 0,
-                            readMode: 0,
                             cover: cover
                         })
                     } catch (e) {

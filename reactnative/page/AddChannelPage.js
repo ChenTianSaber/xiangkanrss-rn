@@ -2,14 +2,12 @@
  * 订阅源内容列表
  */
 import React, { useEffect, useState } from 'react'
-import { View, Text, Image, DeviceEventEmitter, TouchableOpacity,TextInput } from 'react-native'
+import { View, Text, TouchableOpacity, TextInput } from 'react-native'
 import { Colors } from 'react-native-ui-lib'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 import * as rssParser from 'react-native-rss-parser'
 import RNFetchBlob from "rn-fetch-blob"
-import { insertChannel, insertRSSItem } from '../database/RealmManager'
 
-var cheerio = require('cheerio')
 var moment = require('moment')
 
 /**
@@ -25,6 +23,10 @@ const UrlEditTxt = (props) => {
 
     getUrl = () => {
         return url
+    }
+
+    clearUrl = () => {
+        setUrl('')
     }
 
     return (
@@ -85,11 +87,11 @@ const SearchView = (props) => {
                                         description: rss.description,
                                         lastUpdated: moment().format(),
                                         fold: '',
+                                        readMode: 0,
                                         icon: `data:image/png;base64,${base64Str}`
                                     }
                                     let items = rss.items
                                     navigation.navigate('EditChannel', { channel: channel, items: items })
-
                                 } else {
                                     console.log('出错了')
                                 }
@@ -110,83 +112,6 @@ const SearchView = (props) => {
             }} style={{ padding: 10, borderRadius: 8, backgroundColor: isFetching ? Colors.grey20 : Colors.blue40, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 24 }}>
                 <Ionicons name={'search-outline'} color={Colors.white} size={18} />
                 <Text style={{ fontSize: 16, color: Colors.white, fontWeight: 'bold', marginStart: 8 }}>{isFetching ? '搜寻中...' : '检测'}</Text>
-                <View style={{ width: 18 }} />
-            </TouchableOpacity>
-        </View>
-    )
-}
-
-const AddView = (props) => {
-
-    const { rssData, xmlLink } = props
-    const [data, setData] = useState(rssData)
-
-    return (
-        <View style={{ flex: 1, padding: 16 }}>
-            <Image source={{ uri: `data:image/png;base64,${base64Str}` }} style={{ width: 30, height: 30 }} />
-            <Text style={{ color: Colors.grey1, fontWeight: 'bold', fontSize: 18 }}>{data.title}</Text>
-            <Text style={{ color: Colors.grey20, fontSize: 14 }}>{data.description}</Text>
-            <Text style={{ color: Colors.grey30, fontSize: 12 }}>{data.links[0].url}</Text>
-            <Text style={{ color: Colors.grey30, fontSize: 12 }}>{data.items[0].authors[0] ? data.items[0].authors[0].name : ''}</Text>
-
-            <TouchableOpacity activeOpacity={0.7} onPress={async () => {
-                // 添加到数据库
-                try {
-                    // 保存channel
-                    let channel = {
-                        title: rssData.title,
-                        type: rssData.type,
-                        xmlLink: xmlLink,
-                        htmlLink: rssData.links[0].url,
-                        description: rssData.description,
-                        lastUpdated: moment().format(),
-                        fold: '',
-                        icon: `data:image/png;base64,${base64Str}`
-                    }
-                    insertChannel(channel)
-                    console.log(`保存成功: ${channel.title}`)
-
-                    // 保存Item数据
-                    for (item of rssData.items) {
-
-                        let content = item.content ? item.content : (item.description ? item.description : "")
-                        let description = content.replace(/<[^>]+>/g, "").replace(/(^\s*)|(\s*$)/g, "").substring(0, 300)
-
-                        // 获取第一张图当封面
-                        let htmlParser = cheerio.load(content)
-                        let cover = htmlParser('img').attr('src')
-                        cover = cover ? cover : ''
-
-                        console.log('cover ->', cover)
-
-                        try {
-                            insertRSSItem({
-                                title: item.title,
-                                link: item.links[0].url,
-                                description: description,
-                                content: content,
-                                author: item.authors[0] ? item.authors[0].name : '',
-                                published: item.published ? item.published : moment().format(),
-                                channelXmlLink: xmlLink,
-                                channelTitle: rssData.title,
-                                channelIcon: `data:image/png;base64,${base64Str}`,
-                                readState: 0,
-                                readMode: 0,
-                                cover: cover
-                            })
-                        } catch (e) {
-                            console.log('失败->', e)
-                        }
-                    }
-                    alert('保存成功')
-                    DeviceEventEmitter.emit('REFRESH')
-                } catch (e) {
-                    console.log('保存失败', e)
-                    alert('保存失败')
-                }
-            }} style={{ padding: 10, borderRadius: 8, backgroundColor: Colors.blue40, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 24 }}>
-                <Ionicons name={'save-outline'} color={Colors.white} size={18} />
-                <Text style={{ fontSize: 16, color: Colors.white, fontWeight: 'bold', marginStart: 8 }}>保存</Text>
                 <View style={{ width: 18 }} />
             </TouchableOpacity>
         </View>

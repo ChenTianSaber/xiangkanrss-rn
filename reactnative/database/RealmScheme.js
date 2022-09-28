@@ -8,6 +8,7 @@ export const ChannelScheme = {
         htmlLink: 'string',
         description: 'string',
         lastUpdated: 'string',
+        readMode: 'int',
         fold: 'string',
         icon: 'string'
     }
@@ -24,7 +25,6 @@ export const RSSItemScheme = {
         author: 'string',
         published: 'string',
         readState: 'int',
-        readMode: 'int',
         cover: 'string',
         channelXmlLink: 'string',
         channelTitle: 'string',

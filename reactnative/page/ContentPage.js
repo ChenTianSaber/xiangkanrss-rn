@@ -2,7 +2,7 @@
  * 订阅源内容列表
  */
 import React, { Component, useState } from 'react'
-import { Button, FlatList, Text, TouchableOpacity, View, Image, DeviceEventEmitter } from 'react-native'
+import { Button, FlatList, Text, TouchableOpacity, View, Image, DeviceEventEmitter, Platform } from 'react-native'
 import WebView from 'react-native-webview'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 import { Colors } from 'react-native-ui-lib'
@@ -122,7 +122,7 @@ const ContentPage = ({ route }) => {
       <WebView
         style={{ flex: 1 }}
         originWhitelist={['*']}
-        source={{ html: html, baseUrl: 'rssstyle/' }}
+        source={{ html: html, baseUrl: Platform.OS == 'ios' ? 'rssstyle/' : 'file:///android_asset/rssstyle/' }}
       />
       <ActionBar item={item} />
     </View>
