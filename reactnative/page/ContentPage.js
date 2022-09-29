@@ -134,7 +134,7 @@ class ContentPage extends Component {
                 </span>
               </div>
               <a href="${item.link}"><h1><span class="comp-wrapper--QaPk g-comp--ColorTitle">${item.title}</span></h1></a>
-              <div class="meta--xggW"><span class="author--pu_v">${item.author}</span><span class="time--GfTd">${moment(item.published).format('YYYY-MM-DD h:mm')}</span></div>
+              <div class="meta--xggW"><span class="time--GfTd">${moment(item.published).format('YYYY-MM-DD h:mm')}</span><span class="author--pu_v">${item.author}</span></div>
             </div>
           </div>
           <div class="page-inner--s_CE">

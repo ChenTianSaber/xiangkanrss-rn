@@ -148,7 +148,11 @@ const ChannelList = (props) => {
                     expanded={isExpend}
                     sectionHeader={
                         <View style={{ width: '100%', height: 36, paddingStart: 8, paddingEnd: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <Text style={{ fontSize: 16, fontWeight: 'bold', color: Colors.grey1 }}>{sectionName ? sectionName : '未分类'}</Text>
+                            <TouchableOpacity onPress={() => {
+                                alert('查看该分类的内容')
+                            }}>
+                                <Text style={{ fontSize: 16, fontWeight: 'bold', color: Colors.grey1 }}>{sectionName ? sectionName : '未分类'}</Text>
+                            </TouchableOpacity>
                             <Ionicons name={isExpend ? 'ios-chevron-up' : 'ios-chevron-down'} size={20} color={Colors.grey1} />
                         </View>
                     }
@@ -157,8 +161,8 @@ const ChannelList = (props) => {
                     <View style={{ flex: 1, borderWidth: 1, borderColor: "#e4e4e4", borderRadius: 8, marginTop: 12, backgroundColor: 'white' }}>
                         {viewList}
                     </View>
-                </ExpandableSection>
-            </View>
+                </ExpandableSection >
+            </View >
         )
     }
 
@@ -298,6 +302,9 @@ class HomePage extends Component {
             } catch (e) {
                 console.log('更新失败->', channel.title, e)
             }
+            this.updateTipView(
+                <Text>{`更新完毕: ${moment(this.allChannelList[0].lastUpdated).format('YYYY-MM-DD h:mm')}`}</Text>
+            )
         }
     }
 
@@ -306,12 +313,12 @@ class HomePage extends Component {
             <View style={{ flex: 1, backgroundColor: '#f2f2f2' }}>
                 {this.state.channelList.length > 0 ?
                     <ScrollView style={{ flex: 1, paddingStart: 16, paddingEnd: 16 }} refreshControl={
-                        <RefreshControl refreshing={this.state.refreshing} onRefresh={() => {
+                        <RefreshControl refreshing={false} onRefresh={() => {
+                            if (this.state.refreshing) {
+                                return
+                            }
                             this.setState({ refreshing: true })
                             this.refreshChannelData()
-                            this.updateTipView(
-                                <Text>{`更新完毕: ${moment(allChannelList[0].lastUpdated).format('YYYY-MM-DD h:mm')}`}</Text>
-                            )
                             this.setState({ refreshing: false })
                         }} />
                     }>
