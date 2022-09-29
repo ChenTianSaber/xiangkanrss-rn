@@ -5,16 +5,17 @@ import React, { useState } from 'react'
 import { Text, TouchableOpacity, View, Image, TextInput, DeviceEventEmitter } from 'react-native'
 import { Colors, RadioButton, RadioGroup } from 'react-native-ui-lib'
 import Ionicons from 'react-native-vector-icons/Ionicons'
-import { insertChannel, insertRSSItem } from '../database/RealmManager'
+import { insertChannel, insertRSSItem, updateChannelInfo } from '../database/RealmManager'
 
 var cheerio = require('cheerio')
 
 const EditChannelPage = (props) => {
 
-    const { channel, items } = props.route.params
+    const { channel, items, isAdd } = props.route.params
     const { navigation } = props
     const [title, setTitle] = useState(channel.title)
     const [readMode, setReadMode] = useState(channel.readMode)
+    const [contentType, setContentType] = useState(channel.contentType)
 
     return (
         <View style={{ flex: 1, backgroundColor: '#f2f2f2' }}>
@@ -31,6 +32,7 @@ const EditChannelPage = (props) => {
                         defaultValue={title}
                     />
                 </View>
+
                 {/* 默认阅读模式 */}
                 <View style={{ width: '100%', marginTop: 24 }}>
                     <Text style={{ fontSize: 16, fontWeight: 'bold', color: Colors.grey1 }}>默认阅读模式</Text>
@@ -40,43 +42,62 @@ const EditChannelPage = (props) => {
                     </RadioGroup>
                 </View>
 
+                {/* 默认阅读源类型 */}
+                <View style={{ width: '100%', marginTop: 24 }}>
+                    <Text style={{ fontSize: 16, fontWeight: 'bold', color: Colors.grey1 }}>订阅源的类型</Text>
+                    <RadioGroup initialValue={contentType} onValueChange={(value) => setContentType(value)} style={{ flexDirection: 'row', marginTop: 12 }}>
+                        <RadioButton value={0} label={'文章'} />
+                        <RadioButton value={1} label={'视频'} style={{ marginStart: 16 }} />
+                        <RadioButton value={2} label={'图集'} style={{ marginStart: 16 }} />
+                    </RadioGroup>
+                </View>
+
                 <TouchableOpacity activeOpacity={0.7} onPress={async () => {
                     // 添加到数据库
                     try {
-                        channel.title = title
-                        channel.readMode = readMode
-                        insertChannel(channel)
+                        if (isAdd) {
+                            // 新增数据
+                            channel.title = title
+                            channel.readMode = readMode
+                            channel.contentType = contentType
+                            insertChannel(channel)
+                        } else {
+                            // 更新数据
+                            updateChannelInfo(channel, title, readMode, contentType)
+                        }
                         console.log(`保存成功: ${channel.title}`)
 
                         // 保存Item数据
-                        for (let item of items) {
+                        if (isAdd) {
+                            for (let item of items) {
 
-                            let content = item.content ? item.content : (item.description ? item.description : "")
-                            let description = content.replace(/<[^>]+>/g, "").replace(/(^\s*)|(\s*$)/g, "").substring(0, 300)
+                                let content = item.content ? item.content : (item.description ? item.description : "")
+                                let description = content.replace(/<[^>]+>/g, "").replace(/(^\s*)|(\s*$)/g, "").substring(0, 300)
 
-                            // 获取第一张图当封面
-                            let htmlParser = cheerio.load(content)
-                            let cover = htmlParser('img').attr('src')
-                            cover = cover ? cover : ''
+                                // 获取第一张图当封面
+                                let htmlParser = cheerio.load(content)
+                                let cover = htmlParser('img').attr('src')
+                                cover = cover ? cover : ''
 
-                            console.log('cover ->', cover)
+                                console.log('cover ->', cover)
 
-                            try {
-                                insertRSSItem({
-                                    title: item.title,
-                                    link: item.links[0].url,
-                                    description: description,
-                                    content: content,
-                                    author: item.authors[0] ? item.authors[0].name : '',
-                                    published: item.published ? item.published : moment().format(),
-                                    channelXmlLink: channel.xmlLink,
-                                    channelTitle: channel.title,
-                                    channelIcon: channel.icon,
-                                    readState: 0,
-                                    cover: cover
-                                })
-                            } catch (e) {
-                                console.log('失败->', e)
+                                try {
+                                    insertRSSItem({
+                                        title: item.title,
+                                        link: item.links[0].url,
+                                        description: description,
+                                        content: content,
+                                        author: item.authors[0] ? item.authors[0].name : '',
+                                        published: item.published ? item.published : moment().format(),
+                                        channelXmlLink: channel.xmlLink,
+                                        channelTitle: channel.title,
+                                        channelIcon: channel.icon,
+                                        readState: 0,
+                                        cover: cover
+                                    })
+                                } catch (e) {
+                                    console.log('失败->', e)
+                                }
                             }
                         }
                         alert('保存成功')
@@ -84,7 +105,7 @@ const EditChannelPage = (props) => {
                         navigation.pop()
                     } catch (e) {
                         console.log('保存失败', e)
-                        alert('保存失败')
+                        alert('保存失败，可能订阅源已存在')
                     }
                 }} style={{ width: '100%', padding: 10, borderRadius: 8, backgroundColor: Colors.blue40, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 24 }}>
                     <Ionicons name={'save-outline'} color={Colors.white} size={18} />

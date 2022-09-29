@@ -2,7 +2,7 @@
  * 订阅源内容列表
  */
 import React, { useEffect, useState } from 'react'
-import { View, Text, TouchableOpacity, TextInput } from 'react-native'
+import { View, Text, TouchableOpacity, TextInput, Platform } from 'react-native'
 import { Colors } from 'react-native-ui-lib'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 import * as rssParser from 'react-native-rss-parser'
@@ -71,13 +71,15 @@ const SearchView = (props) => {
 
                         RNFetchBlob.config({
                             trusty: true,
+                            fileCache: true,
+                            appendExt: 'png'
                         }).fetch("GET", iconUrl)
                             .then((res) => {
                                 setIsFetching(false)
                                 let status = res.info().status
                                 if (status == 200) {
-                                    let base64Str = res.base64()
-                                    console.log('成功了->', base64Str)
+                                    let iconPath = res.path()
+                                    console.log('成功了->', iconPath)
                                     // 组装数据，进入编辑页面
                                     let channel = {
                                         title: rss.title,
@@ -89,10 +91,10 @@ const SearchView = (props) => {
                                         lastUpdated: moment().format(),
                                         fold: '',
                                         readMode: 0,
-                                        icon: `data:image/png;base64,${base64Str}`
+                                        icon: Platform.OS == 'ios' ? `${iconPath}` : `file://${iconPath}`
                                     }
                                     let items = rss.items
-                                    navigation.navigate('EditChannel', { channel: channel, items: items })
+                                    navigation.navigate('EditChannel', { channel: channel, items: items, isAdd: true })
                                 } else {
                                     console.log('出错了')
                                 }

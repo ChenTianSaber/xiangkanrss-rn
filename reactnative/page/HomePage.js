@@ -80,7 +80,7 @@ const ChannelList = (props) => {
         } else {
             let sum = 0
             for (item of unReadItemList) {
-                if (item.channelTitle == channel.title) {
+                if (item.channelXmlLink == channel.xmlLink) {
                     sum++
                 }
             }
@@ -125,7 +125,7 @@ const ChannelList = (props) => {
                     <TouchableOpacity onPress={() => {
                         // navigation.navigate('RSSList')
                     }} onLongPress={() => {
-                        // navigation.navigate('EditChannel')
+                        navigation.navigate('EditChannel', { channel: data, items: [], isAdd: false })
                     }} activeOpacity={0.8} style={{ flex: 1, height: 56, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingStart: 16, paddingEnd: 16 }}>
                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                             <Image source={{ uri: data.icon }} style={{ width: 32, height: 32, backgroundColor: Colors.grey80, borderRadius: 30 }} />
@@ -138,7 +138,6 @@ const ChannelList = (props) => {
                     </TouchableOpacity>
                     {index == list.length - 1 ? null : <View style={{ width: '100%', height: 1, backgroundColor: '#e4e4e4' }} />}
                 </View>
-
             )
         }
 
@@ -234,9 +233,13 @@ class HomePage extends Component {
         })
 
         if (this.allChannelList.length > 0) {
-            this.updateTipView(
-                <Text>{`上次更新: ${moment(this.allChannelList[0].lastUpdated).format('YYYY-MM-DD h:mm')}`}</Text>
-            )
+            try {
+                this.updateTipView(
+                    <Text>{`上次更新: ${moment(this.allChannelList[0].lastUpdated).format('YYYY-MM-DD h:mm')}`}</Text>
+                )
+            } catch (e) {
+                console.log('updateTipView error')
+            }
         }
     }
 
