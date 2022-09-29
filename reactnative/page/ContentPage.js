@@ -1,13 +1,15 @@
 /**
  * 订阅源内容列表
  */
-import React, { Component, useState } from 'react'
-import { Button, FlatList, Text, TouchableOpacity, View, Image, DeviceEventEmitter, Platform } from 'react-native'
+import React, { Component } from 'react'
+import { View, DeviceEventEmitter, Platform, Linking } from 'react-native'
 import WebView from 'react-native-webview'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 import { Colors } from 'react-native-ui-lib'
+import { queryChannelByXmlLink } from '../database/RealmManager'
 
 var moment = require('moment')
+var cheerio = require('cheerio')
 
 class ActionBar extends Component {
 
@@ -18,13 +20,14 @@ class ActionBar extends Component {
   }
 
   componentDidMount() {
-    this.setState({ readState: this.props.item.readState })
+    const { item } = this.props
+    this.setState({ readState: item.readState })
   }
 
   render() {
     const { item } = this.props
     return (
-      <View style={{ width: '100%', height: 68, backgroundColor: '#f2f2f2', position: 'absolute', bottom: 0 }}>
+      <View style={{ width: '100%', height: 58, backgroundColor: '#f2f2f2' }}>
         <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingStart: 16, paddingEnd: 16 }} >
           {this.state.readState == 2 ? <Ionicons name={'ios-star'} size={26} color={Colors.yellow30} onPress={() => {
             this.setState({ readState: 0 })
@@ -42,18 +45,57 @@ class ActionBar extends Component {
             DeviceEventEmitter.emit('UPDATE_ITEM_READ_STATE', { title: item.title, state: 1 })
           }} />}
         </View>
-        <View style={{ width: 1, height: 20 }} />
+        {Platform.OS == 'ios' ? <View style={{ width: 1, height: 20 }} /> : null}
       </View>
     )
   }
 }
 
-const ContentPage = ({ route }) => {
+class ProgressBar extends Component {
 
-  let item = route.params.item
+  state = { progress: 0 }
 
-  let html = `
-    <!DOCTYPE html>
+  render() {
+    if (this.state.progress >= 100) {
+      return null
+    } else {
+      return (
+        <View style={{ width: `${this.state.progress}%`, height: 2, backgroundColor: Colors.blue20 }}></View>
+      )
+    }
+  }
+}
+
+class ContentPage extends Component {
+
+  state = { readMode: 0, html: '' }
+
+  constructor(props) {
+    super(props)
+  }
+
+  componentDidMount() {
+    const { item } = this.props.route.params
+    let channels = queryChannelByXmlLink(item.channelXmlLink)
+    let html = this.buildHtml()
+    this.setState({ readMode: channels[0].readMode ? channels[0].readMode : 0, html: html })
+  }
+
+  buildHtml = () => {
+    const { item } = this.props.route.params
+    // Android上的B站iframe是file开头的，无法打开，需要替换为https
+    let htmlContent = item.content
+    let htmlParser = cheerio.load(htmlContent)
+    htmlParser('iframe').map((i, el) => {
+      let src = htmlParser(el).attr('src')
+      if (!src.startsWith('http')) {
+        htmlParser(el).attr('src', `https:${src}`)
+      }
+    })
+    htmlContent = htmlParser.html()
+
+    return `
+<!DOCTYPE html>
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta name="renderer" content="webkit">
@@ -100,7 +142,7 @@ const ContentPage = ({ route }) => {
               <div class="comp-wrapper--gDGC g-comp--PostContent">
                 <div class="g-typo g-post-content wangEditor-txt" id="g-post-content " style="font-size: 16px;">
                   <div class="js--post-dom" id="js--post-dom">
-                  ${item.content}
+                  ${htmlContent}
                   </div>
                 </div>
               </div>
@@ -116,17 +158,38 @@ const ContentPage = ({ route }) => {
 </body>
 
 </html>`
+  }
 
-  return (
-    <View style={{ flex: 1, backgroundColor: '#f2f2f2' }}>
-      <WebView
-        style={{ flex: 1 }}
-        originWhitelist={['*']}
-        source={{ html: html, baseUrl: Platform.OS == 'ios' ? 'rssstyle/' : 'file:///android_asset/rssstyle/' }}
-      />
-      <ActionBar item={item} />
-    </View>
-  )
+  render() {
+    const { item } = this.props.route.params
+    return (
+      <View style={{ flex: 1, backgroundColor: '#f2f2f2' }}>
+        <WebView
+          style={{ flex: 1 }}
+          originWhitelist={['*']}
+          source={this.state.readMode == 0 ? { html: this.state.html, baseUrl: Platform.OS == 'ios' ? 'rssstyle/' : 'file:///android_asset/rssstyle/' }
+            : { uri: item.link }}
+          onShouldStartLoadWithRequest={(request) => {
+            if (this.state.readMode == 1) {
+              return true
+            }
+
+            if (request.url.startsWith('http')) {
+              Linking.openURL(request.url)
+              return false
+            } else {
+              return true
+            }
+          }}
+          onLoadProgress={({ nativeEvent }) => {
+            this.progressBar.setState({ progress: nativeEvent.progress * 100 })
+          }}
+        />
+        <ProgressBar ref={(view) => this.progressBar = view} />
+        <ActionBar item={item} />
+      </View >
+    )
+  }
 }
 
 export default ContentPage

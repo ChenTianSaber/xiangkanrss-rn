@@ -3,7 +3,7 @@
  * 展示订阅源的列表页
  */
 import React, { Component, useState } from 'react'
-import { ScrollView, Text, TouchableOpacity, View, Image, RefreshControl, DeviceEventEmitter } from 'react-native'
+import { ScrollView, Text, TouchableOpacity, View, Image, RefreshControl, DeviceEventEmitter, Platform } from 'react-native'
 import { Badge, Colors, ExpandableSection } from 'react-native-ui-lib'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 import * as rssParser from 'react-native-rss-parser'
@@ -190,7 +190,7 @@ class ActionBar extends Component {
                         this.props.navigation.navigate('AddChannel')
                     }} />
                 </View>
-                <View style={{ width: 1, height: 20 }} />
+                {Platform.OS == 'ios' ? <View style={{ width: 1, height: 20 }} /> : null}
             </View>
         )
     }
@@ -268,7 +268,7 @@ class HomePage extends Component {
 
                 updateChannelLastUpdated(moment().format())
 
-                for (item of rssData.items) {
+                for (let item of rssData.items) {
                     let content = item.content ? item.content : (item.description ? item.description : "")
                     let description = content.replace(/<[^>]+>/g, "").replace(/(^\s*)|(\s*$)/g, "").substring(0, 300)
 
