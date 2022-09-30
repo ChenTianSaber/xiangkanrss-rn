@@ -32,3 +32,11 @@ export const RSSItemScheme = {
         channelIcon: 'string',
     }
 }
+
+export const FoldScheme = {
+    name: 'Fold',
+    primaryKey: 'title',
+    properties: {
+        title: 'string',
+    }
+}

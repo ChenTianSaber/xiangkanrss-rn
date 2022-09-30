@@ -1,9 +1,9 @@
 import Realm from 'realm'
-import { ChannelScheme, RSSItemScheme } from './RealmScheme'
+import { ChannelScheme, FoldScheme, RSSItemScheme } from './RealmScheme'
 
 let realm = new Realm({
     path: "xiangkan",
-    schema: [ChannelScheme, RSSItemScheme],
+    schema: [ChannelScheme, RSSItemScheme, FoldScheme],
 })
 
 /**

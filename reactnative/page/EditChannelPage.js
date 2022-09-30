@@ -76,6 +76,18 @@ const EditChannelPage = (props) => {
                     </RadioGroup>
                 </View>
 
+                {/* 选择分类 */}
+                <TouchableOpacity onPress={() => {
+                    // 进入分类页面
+                    navigation.navigate('FoldManager')
+                }} activeOpacity={0.8} style={{ width: '100%', marginTop: 24, flexDirection: 'row', marginTop: 32 }}>
+                    <Text style={{ fontSize: 16, fontWeight: 'bold', color: Colors.grey1 }}>选择分类:</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <Text style={{ color: '#262626', fontSize: 16, marginStart: 16 }}>{'未分类'}</Text>
+                        <Ionicons name='chevron-forward' size={20} color={Colors.grey30} />
+                    </View>
+                </TouchableOpacity>
+
                 <TouchableOpacity activeOpacity={0.7} onPress={async () => {
                     setComfirmDelete(true)
                 }} style={{ width: '100%', padding: 10, borderRadius: 8, backgroundColor: Colors.red40, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 32 }}>
