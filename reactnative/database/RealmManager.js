@@ -28,6 +28,13 @@ const queryRSSItemByReadState = (readState) => {
 }
 
 /**
+ * 通过xmlLink查询RSSItem
+ */
+const queryRSSItemByXmlLink = (channelXmlLink) => {
+    return realm.objects("RSSItem").filtered(`channelXmlLink = '${channelXmlLink}' and readState = 0`)
+}
+
+/**
  * 更新channel
  */
 const updateChannelLastUpdated = (channel, lastUpdated) => {
@@ -82,5 +89,6 @@ export {
     insertChannel,
     updateRSSItemReadState,
     updateChannelInfo,
-    queryChannelByXmlLink
+    queryChannelByXmlLink,
+    queryRSSItemByXmlLink
 }

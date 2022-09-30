@@ -123,7 +123,7 @@ const ChannelList = (props) => {
             viewList.push(
                 <View style={{ width: '100%' }} key={index}>
                     <TouchableOpacity onPress={() => {
-                        // navigation.navigate('RSSList')
+                        navigation.navigate('RSSList', { channelXmlLink: data.xmlLink, title: data.title, readState: 0 })
                     }} onLongPress={() => {
                         navigation.navigate('EditChannel', { channel: data, items: [], isAdd: false })
                     }} activeOpacity={0.8} style={{ flex: 1, height: 56, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingStart: 16, paddingEnd: 16 }}>
