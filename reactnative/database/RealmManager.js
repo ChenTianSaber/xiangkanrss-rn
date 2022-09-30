@@ -30,8 +30,15 @@ const queryRSSItemByReadState = (readState) => {
 /**
  * 通过xmlLink查询RSSItem
  */
-const queryRSSItemByXmlLink = (channelXmlLink) => {
-    return realm.objects("RSSItem").filtered(`channelXmlLink = '${channelXmlLink}' and readState = 0`)
+const queryRSSItemByXmlLinkAndReadState = (channelXmlLink, readState) => {
+    return realm.objects("RSSItem").filtered(`channelXmlLink = '${channelXmlLink}' and readState = ${readState}`)
+}
+
+/**
+ * 通过xmlLink查询RSSItem
+ */
+const queryAllRSSItemByXmlLink = (channelXmlLink) => {
+    return realm.objects("RSSItem").filtered(`channelXmlLink = '${channelXmlLink}'`)
 }
 
 /**
@@ -81,6 +88,20 @@ const insertChannel = (channel) => {
     })
 }
 
+// 删除某个channel
+const deleteChannel = (channel) => {
+    realm.write(() => {
+        realm.delete(channel)
+    })
+}
+
+// 删除items
+const deleteRSSItems = (items) => {
+    realm.write(() => {
+        realm.delete(items)
+    })
+}
+
 export {
     queryChannels,
     queryRSSItemByReadState,
@@ -90,5 +111,8 @@ export {
     updateRSSItemReadState,
     updateChannelInfo,
     queryChannelByXmlLink,
-    queryRSSItemByXmlLink
+    queryAllRSSItemByXmlLink,
+    queryRSSItemByXmlLinkAndReadState,
+    deleteChannel,
+    deleteRSSItems
 }

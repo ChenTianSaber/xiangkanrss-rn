@@ -5,7 +5,7 @@ import React, { Component, useEffect, useState } from 'react'
 import { SectionList, Text, TouchableOpacity, View, Image, DeviceEventEmitter } from 'react-native'
 import { Button, Colors, Dialog, Drawer, PanningProvider } from 'react-native-ui-lib'
 import Ionicons from 'react-native-vector-icons/Ionicons'
-import { queryRSSItemByReadState, queryRSSItemByXmlLink, updateRSSItemReadState } from '../database/RealmManager'
+import { queryRSSItemByReadState, queryRSSItemByXmlLinkAndReadState, updateRSSItemReadState } from '../database/RealmManager'
 
 var moment = require('moment')
 
@@ -131,7 +131,7 @@ class RSSListPage extends Component {
         channelXmlLink = this.props.route.params.channelXmlLink
         console.log('channelXmlLink->', channelXmlLink)
         if (channelXmlLink != undefined) {
-            this.allItemlist = queryRSSItemByXmlLink(channelXmlLink)
+            this.allItemlist = queryRSSItemByXmlLinkAndReadState(channelXmlLink, 0)
         } else {
             this.allItemlist = queryRSSItemByReadState(readState)
         }
