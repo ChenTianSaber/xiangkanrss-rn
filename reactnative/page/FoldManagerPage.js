@@ -15,6 +15,10 @@ class FoldManagerPage extends Component {
         inputFoldTitle: ''
     }
 
+    constructor(props) {
+        super(props)
+    }
+
     componentDidMount() {
         // 查询数据库
         let folds = queryFolds()
@@ -64,7 +68,13 @@ class FoldManagerPage extends Component {
                     style={{ flex: 1 }}
                     data={this.state.foldList}
                     renderItem={({ item }) =>
-                        <View style={{ width: '100%', height: 56, backgroundColor: 'white', justifyContent: 'space-between', flexDirection: 'row' }}>
+                        <TouchableOpacity onPress={() => {
+                            this.props.navigation.navigate({
+                                name: 'EditChannel',
+                                params: { selectData: item },
+                                merge: true,
+                            });
+                        }} style={{ width: '100%', height: 56, backgroundColor: 'white', justifyContent: 'space-between', flexDirection: 'row' }}>
                             <Text>{item.title}</Text>
                             <TouchableOpacity style={{ width: 56, height: 56, backgroundColor: Colors.red40 }} onPress={() => {
                                 // 删除数据库
@@ -80,7 +90,7 @@ class FoldManagerPage extends Component {
                             }}>
                                 <Text>删除</Text>
                             </TouchableOpacity>
-                        </View>
+                        </TouchableOpacity>
                     }
                 />
             </View>

@@ -53,11 +53,12 @@ const updateChannelLastUpdated = (channel, lastUpdated) => {
 /**
  * 更新channel
  */
-const updateChannelInfo = (channel, title, readMode, contentType) => {
+const updateChannelInfo = (channel, title, readMode, contentType,fold) => {
     realm.write(() => {
         channel.title = title
         channel.readMode = readMode
         channel.contentType = contentType
+        channel.fold = fold
     })
 }
 

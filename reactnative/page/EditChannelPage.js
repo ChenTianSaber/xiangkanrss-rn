@@ -1,7 +1,7 @@
 /**
  * 订阅源内容列表
  */
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Text, TouchableOpacity, View, Image, TextInput, DeviceEventEmitter } from 'react-native'
 import { Button, Colors, Dialog, PanningProvider, RadioButton, RadioGroup } from 'react-native-ui-lib'
 import Ionicons from 'react-native-vector-icons/Ionicons'
@@ -17,6 +17,15 @@ const EditChannelPage = (props) => {
     const [comfirmDelete, setComfirmDelete] = useState(false)
     const [readMode, setReadMode] = useState(channel.readMode)
     const [contentType, setContentType] = useState(channel.contentType)
+    const [fold, setFold] = useState(channel.fold)
+
+    useEffect(() => {
+        if (props.route.params?.selectData) {
+            // 绑定分类
+            console.log('selectData->', props.route.params.selectData)
+            setFold(props.route.params.selectData.title)
+        }
+    })
 
     return (
         <View style={{ flex: 1, backgroundColor: '#f2f2f2' }}>
@@ -83,7 +92,7 @@ const EditChannelPage = (props) => {
                 }} activeOpacity={0.8} style={{ width: '100%', marginTop: 24, flexDirection: 'row', marginTop: 32 }}>
                     <Text style={{ fontSize: 16, fontWeight: 'bold', color: Colors.grey1 }}>选择分类:</Text>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <Text style={{ color: '#262626', fontSize: 16, marginStart: 16 }}>{'未分类'}</Text>
+                        <Text style={{ color: '#262626', fontSize: 16, marginStart: 16 }}>{fold}</Text>
                         <Ionicons name='chevron-forward' size={20} color={Colors.grey30} />
                     </View>
                 </TouchableOpacity>
@@ -104,10 +113,11 @@ const EditChannelPage = (props) => {
                             channel.title = title
                             channel.readMode = readMode
                             channel.contentType = contentType
+                            channel.fold = fold
                             insertChannel(channel)
                         } else {
                             // 更新数据
-                            updateChannelInfo(channel, title, readMode, contentType)
+                            updateChannelInfo(channel, title, readMode, contentType,fold)
                         }
                         console.log(`保存成功: ${channel.title}`)
 
