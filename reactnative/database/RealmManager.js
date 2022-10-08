@@ -102,6 +102,29 @@ const deleteRSSItems = (items) => {
     })
 }
 
+/**
+ * 查询所有的folds
+ */
+const queryFolds = () => {
+    return realm.objects("Fold")
+}
+
+// 删除Fold
+const deleteFold = (fold) => {
+    realm.write(() => {
+        realm.delete(fold)
+    })
+}
+
+/**
+ * 插入Fold
+ */
+const insertFold = (fold) => {
+    realm.write(() => {
+        realm.create("Fold", fold)
+    })
+}
+
 export {
     queryChannels,
     queryRSSItemByReadState,
@@ -114,5 +137,8 @@ export {
     queryAllRSSItemByXmlLink,
     queryRSSItemByXmlLinkAndReadState,
     deleteChannel,
-    deleteRSSItems
+    deleteRSSItems,
+    queryFolds,
+    insertFold,
+    deleteFold,
 }

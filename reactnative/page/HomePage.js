@@ -187,7 +187,8 @@ class ActionBar extends Component {
             <View style={{ width: '100%', height: 68, backgroundColor: '#f2f2f2', position: 'absolute', bottom: 0 }}>
                 <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingStart: 16, paddingEnd: 16 }} >
                     <Ionicons name={'cog-outline'} size={26} onPress={() => {
-                        this.props.navigation.navigate('Setting')
+                        // this.props.navigation.navigate('Setting')
+                        this.props.navigation.navigate('FoldManager')
                     }} />
                     <View>{this.state.tipView}</View>
                     <Ionicons name={'add-circle-outline'} size={26} onPress={() => {

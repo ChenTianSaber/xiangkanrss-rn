@@ -1,13 +1,26 @@
 /**
  * 订阅源内容列表
  */
-import React, { Component, useState } from 'react'
-import { Button, FlatList, Text, TouchableOpacity, View, Image } from 'react-native'
+import React, { Component } from 'react'
+import { Button, FlatList, Text, TouchableOpacity, View } from 'react-native'
+import { TextInput } from 'react-native-gesture-handler'
 import { Colors, Dialog, PanningProvider } from 'react-native-ui-lib'
+import { deleteFold, insertFold, queryFolds } from '../database/RealmManager'
 
 class FoldManagerPage extends Component {
 
-    state = { createFold: false }
+    state = {
+        createFold: false,
+        foldList: [],
+        inputFoldTitle: ''
+    }
+
+    componentDidMount() {
+        // 查询数据库
+        let folds = queryFolds()
+        console.log('queryFolds ->', folds)
+        this.setState({ foldList: folds })
+    }
 
     render() {
         return (
@@ -17,10 +30,28 @@ class FoldManagerPage extends Component {
                     onDismiss={() => this.setState({ createFold: false })}
                     panDirection={PanningProvider.Directions.DOWN}
                 >
-                    {<View style={{ width: '100%', height: 100, backgroundColor: Colors.white, borderRadius: 8, alignItems: 'center', justifyContent: 'space-between', paddingTop: 16, paddingBottom: 16 }}>
-                        <Button label={'新建'} size={Button.sizes.medium} backgroundColor={Colors.red30} onPress={() => {
-
-                        }} />
+                    {<View style={{ width: '100%', backgroundColor: Colors.white, borderRadius: 8, alignItems: 'center', justifyContent: 'space-between', paddingTop: 16, paddingBottom: 16 }}>
+                        <View style={{ width: '100%', borderWidth: 1, borderColor: "#e4e4e4", borderRadius: 8, marginTop: 12, backgroundColor: 'white', paddingLeft: 6, paddingEnd: 6 }}>
+                            <TextInput
+                                placeholder={'请输入分类名'}
+                                onChangeText={(text) => this.setState({ inputFoldTitle: text })}
+                                style={{ backgroundColor: 'white', fontSize: 16, borderRadius: 8, marginBottom: 32 }}
+                                defaultValue={this.state.inputFoldTitle}
+                            />
+                            <Button title="确认" onPress={() => {
+                                // 插入数据库
+                                try {
+                                    insertFold({ title: this.state.inputFoldTitle })
+                                } catch (e) {
+                                    alert('失败')
+                                    console.log('插入失败，可能已存在', e)
+                                }
+                                this.setState({
+                                    inputFoldTitle: '',
+                                    createFold: false
+                                })
+                            }} />
+                        </View>
                     </View>}
                 </Dialog>
                 {/* 添加按钮 */}
@@ -31,23 +62,21 @@ class FoldManagerPage extends Component {
                 {/* 分类列表 */}
                 <FlatList
                     style={{ flex: 1 }}
-                    data={[
-                        { key: 'Devin' },
-                        { key: 'Dan' },
-                        { key: 'Dominic' },
-                        { key: 'Jackson' },
-                        { key: 'James' },
-                        { key: 'Joel' },
-                        { key: 'John' },
-                        { key: 'Jillian' },
-                        { key: 'Jimmy' },
-                        { key: 'Julie' },
-                    ]}
+                    data={this.state.foldList}
                     renderItem={({ item }) =>
                         <View style={{ width: '100%', height: 56, backgroundColor: 'white', justifyContent: 'space-between', flexDirection: 'row' }}>
-                            <Text>{item.key}</Text>
+                            <Text>{item.title}</Text>
                             <TouchableOpacity style={{ width: 56, height: 56, backgroundColor: Colors.red40 }} onPress={() => {
-                                alert('删除')
+                                // 删除数据库
+                                try {
+                                    deleteFold(item)
+                                } catch (e) {
+                                    alert('失败')
+                                    console.log('失败，可能已存在', e)
+                                }
+                                this.setState({
+                                    foldList: this.state.foldList
+                                })
                             }}>
                                 <Text>删除</Text>
                             </TouchableOpacity>
