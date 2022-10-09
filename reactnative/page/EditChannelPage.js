@@ -88,7 +88,7 @@ const EditChannelPage = (props) => {
                 {/* 选择分类 */}
                 <TouchableOpacity onPress={() => {
                     // 进入分类页面
-                    navigation.navigate('FoldManager')
+                    navigation.navigate('FoldManager', { canSelect: true })
                 }} activeOpacity={0.8} style={{ width: '100%', marginTop: 24, flexDirection: 'row', marginTop: 32 }}>
                     <Text style={{ fontSize: 16, fontWeight: 'bold', color: Colors.grey1 }}>选择分类:</Text>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -117,7 +117,7 @@ const EditChannelPage = (props) => {
                             insertChannel(channel)
                         } else {
                             // 更新数据
-                            updateChannelInfo(channel, title, readMode, contentType,fold)
+                            updateChannelInfo(channel, title, readMode, contentType, fold)
                         }
                         console.log(`保存成功: ${channel.title}`)
 

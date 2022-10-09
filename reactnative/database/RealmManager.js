@@ -21,6 +21,13 @@ const queryChannelByXmlLink = (xmlLink) => {
 }
 
 /**
+ * 通过fold查询channel
+ */
+const queryChannelByFold = (fold) => {
+    return realm.objects("Channel").filtered(`fold = '${fold}'`)
+}
+
+/**
  * 查询某个阅读状态的RSSItem
  */
 const queryRSSItemByReadState = (readState) => {
@@ -53,11 +60,20 @@ const updateChannelLastUpdated = (channel, lastUpdated) => {
 /**
  * 更新channel
  */
-const updateChannelInfo = (channel, title, readMode, contentType,fold) => {
+const updateChannelInfo = (channel, title, readMode, contentType, fold) => {
     realm.write(() => {
         channel.title = title
         channel.readMode = readMode
         channel.contentType = contentType
+        channel.fold = fold
+    })
+}
+
+/**
+ * 更新channel的fold
+ */
+const updateChannelFold = (channel, fold) => {
+    realm.write(() => {
         channel.fold = fold
     })
 }
@@ -142,4 +158,6 @@ export {
     queryFolds,
     insertFold,
     deleteFold,
+    queryChannelByFold,
+    updateChannelFold
 }

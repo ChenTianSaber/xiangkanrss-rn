@@ -5,7 +5,7 @@ import React, { Component } from 'react'
 import { Button, FlatList, Text, TouchableOpacity, View } from 'react-native'
 import { TextInput } from 'react-native-gesture-handler'
 import { Colors, Dialog, PanningProvider } from 'react-native-ui-lib'
-import { deleteFold, insertFold, queryFolds } from '../database/RealmManager'
+import { deleteFold, insertFold, queryChannelByFold, queryFolds, updateChannelFold } from '../database/RealmManager'
 
 class FoldManagerPage extends Component {
 
@@ -24,6 +24,7 @@ class FoldManagerPage extends Component {
         let folds = queryFolds()
         console.log('queryFolds ->', folds)
         this.setState({ foldList: folds })
+        this.canSelect = this.props.route.params?.canSelect
     }
 
     render() {
@@ -59,6 +60,13 @@ class FoldManagerPage extends Component {
                     </View>}
                 </Dialog>
                 {/* 添加按钮 */}
+                {this.canSelect == true ? <Button title="恢复默认" onPress={() => {
+                    this.props.navigation.navigate({
+                        name: 'EditChannel',
+                        params: { selectData: { title: '' } },
+                        merge: true,
+                    });
+                }} /> : null}
                 <Button title="新建分类" onPress={() => {
                     this.setState({ createFold: true })
                 }} />
@@ -69,16 +77,22 @@ class FoldManagerPage extends Component {
                     data={this.state.foldList}
                     renderItem={({ item }) =>
                         <TouchableOpacity onPress={() => {
-                            this.props.navigation.navigate({
-                                name: 'EditChannel',
-                                params: { selectData: item },
-                                merge: true,
-                            });
+                            if (this.canSelect == true) {
+                                this.props.navigation.navigate({
+                                    name: 'EditChannel',
+                                    params: { selectData: item },
+                                    merge: true,
+                                });
+                            }
                         }} style={{ width: '100%', height: 56, backgroundColor: 'white', justifyContent: 'space-between', flexDirection: 'row' }}>
                             <Text>{item.title}</Text>
-                            <TouchableOpacity style={{ width: 56, height: 56, backgroundColor: Colors.red40 }} onPress={() => {
-                                // 删除数据库
+                            {this.canSelect == true ? null : <TouchableOpacity style={{ width: 56, height: 56, backgroundColor: Colors.red40 }} onPress={() => {
+                                // 删除数据库,并且找出fold对应channel，并重置为空
                                 try {
+                                    let channels = queryChannelByFold(item.title)
+                                    for (let channel of channels) {
+                                        updateChannelFold(channel, '')
+                                    }
                                     deleteFold(item)
                                 } catch (e) {
                                     alert('失败')
@@ -89,7 +103,7 @@ class FoldManagerPage extends Component {
                                 })
                             }}>
                                 <Text>删除</Text>
-                            </TouchableOpacity>
+                            </TouchableOpacity>}
                         </TouchableOpacity>
                     }
                 />

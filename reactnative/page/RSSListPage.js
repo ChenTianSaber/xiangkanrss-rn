@@ -5,7 +5,7 @@ import React, { Component, useEffect, useState } from 'react'
 import { SectionList, Text, TouchableOpacity, View, Image, DeviceEventEmitter } from 'react-native'
 import { Button, Colors, Dialog, Drawer, PanningProvider } from 'react-native-ui-lib'
 import Ionicons from 'react-native-vector-icons/Ionicons'
-import { queryRSSItemByReadState, queryRSSItemByXmlLinkAndReadState, updateRSSItemReadState } from '../database/RealmManager'
+import { queryChannelByFold, queryRSSItemByReadState, queryRSSItemByXmlLinkAndReadState, updateRSSItemReadState } from '../database/RealmManager'
 
 var moment = require('moment')
 
@@ -128,10 +128,18 @@ class RSSListPage extends Component {
 
     componentDidMount() {
         readState = this.props.route.params.readState
-        channelXmlLink = this.props.route.params.channelXmlLink
+        channelXmlLink = this.props.route.params?.channelXmlLink
+        foldName = this.props.route.params?.foldName
         console.log('channelXmlLink->', channelXmlLink)
         if (channelXmlLink != undefined) {
-            this.allItemlist = queryRSSItemByXmlLinkAndReadState(channelXmlLink, 0)
+            this.allItemlist = queryRSSItemByXmlLinkAndReadState(channelXmlLink, readState)
+        } else if (foldName != undefined) {
+            // 找出所有channel，再找出所有items
+            let channels = queryChannelByFold(foldName)
+            for (let channel of channels) {
+                let items = queryRSSItemByXmlLinkAndReadState(channel.xmlLink, readState)
+                this.allItemlist.push(...items)
+            }
         } else {
             this.allItemlist = queryRSSItemByReadState(readState)
         }

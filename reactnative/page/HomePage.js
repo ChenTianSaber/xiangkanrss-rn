@@ -149,7 +149,8 @@ const ChannelList = (props) => {
                     sectionHeader={
                         <View style={{ width: '100%', height: 36, paddingStart: 8, paddingEnd: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                             <TouchableOpacity onPress={() => {
-                                alert('查看该分类的内容')
+                                // alert('查看该分类的内容')
+                                navigation.navigate('RSSList', { foldName: sectionName ? sectionName : '', title: sectionName ? sectionName : '未分类', readState: 0 })
                             }}>
                                 <Text style={{ fontSize: 16, fontWeight: 'bold', color: Colors.grey1 }}>{sectionName ? sectionName : '未分类'}</Text>
                             </TouchableOpacity>
@@ -187,7 +188,8 @@ class ActionBar extends Component {
             <View style={{ width: '100%', height: 68, backgroundColor: '#f2f2f2', position: 'absolute', bottom: 0 }}>
                 <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingStart: 16, paddingEnd: 16 }} >
                     <Ionicons name={'cog-outline'} size={26} onPress={() => {
-                        this.props.navigation.navigate('Setting')
+                        // this.props.navigation.navigate('Setting')
+                        this.props.navigation.navigate('FoldManager')
                     }} />
                     <View>{this.state.tipView}</View>
                     <Ionicons name={'add-circle-outline'} size={26} onPress={() => {
