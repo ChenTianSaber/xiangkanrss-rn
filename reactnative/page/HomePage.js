@@ -4,7 +4,7 @@
  */
 import React, { Component, useState } from 'react'
 import { ScrollView, Text, TouchableOpacity, View, Image, RefreshControl, DeviceEventEmitter, Platform } from 'react-native'
-import { Badge, Colors, ExpandableSection } from 'react-native-ui-lib'
+import { Badge, Colors, ExpandableSection, Hint } from 'react-native-ui-lib'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 import * as rssParser from 'react-native-rss-parser'
 import { insertRSSItem, queryChannels, queryRSSItemByReadState, updateChannelLastUpdated } from '../database/RealmManager'
@@ -181,7 +181,7 @@ const ChannelList = (props) => {
  */
 class ActionBar extends Component {
 
-    state = { tipView: null }
+    state = { tipView: null, showAddView: false }
 
     render() {
         return (
@@ -192,12 +192,37 @@ class ActionBar extends Component {
                         this.props.navigation.navigate('FoldManager')
                     }} />
                     <View>{this.state.tipView}</View>
-                    <Ionicons name={'add-circle-outline'} size={26} onPress={() => {
-                        this.props.navigation.navigate('AddChannel')
-                    }} />
+                    <Hint visible={this.state.showAddView} customContent={
+                        <View>
+                            <TouchableOpacity style={{ padding: 12 }} onPress={() => {
+                                this.setState({ showAddView: false })
+                                this.props.navigation.navigate('AddChannel')
+                            }}>
+                                <Text>本地订阅源URL</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={{ padding: 12 }} onPress={() => {
+                                this.setState({ showAddView: false })
+                                alert('导入')
+                            }}>
+                                <Text>opml导入</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={{ padding: 12 }} onPress={() => {
+                                this.setState({ showAddView: false })
+                                alert('导出')
+                            }}>
+                                <Text>opml导出</Text>
+                            </TouchableOpacity>
+                        </View>
+                    } color={Colors.white} style={{ paddingEnd: 24 }} position={Hint.positions.TOP} offset={14} useSideTip={false} borderRadius={5} removePaddings={true} onBackgroundPress={() => { this.setState({ showAddView: false }) }}>
+                        <View>
+                            <Ionicons name={'add-circle-outline'} size={26} onPress={() => {
+                                this.setState({ showAddView: true })
+                            }} />
+                        </View>
+                    </Hint>
                 </View>
                 {Platform.OS == 'ios' ? <View style={{ width: 1, height: 20 }} /> : null}
-            </View>
+            </View >
         )
     }
 }
