@@ -8,9 +8,13 @@ import { Badge, Colors, ExpandableSection, Hint } from 'react-native-ui-lib'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 import * as rssParser from 'react-native-rss-parser'
 import { insertRSSItem, queryChannels, queryRSSItemByReadState, updateChannelLastUpdated } from '../database/RealmManager'
+import DocumentPicker from 'react-native-document-picker'
 
 var moment = require('moment')
 var cheerio = require('cheerio')
+var xml2js = require('xml2js')
+
+var channelOpmlList = []
 
 /**
  * 所有订阅的未读，想看
@@ -67,7 +71,6 @@ const ChannelList = (props) => {
      * 组装数据，将channel的数据转换成SectionList的数据
      */
     const map = new Map()
-    map.set('', [])
     for (channel of channelList) {
         if (map.get(channel.fold) == null || map.get(channel.fold) == undefined) {
             let sum = 0
@@ -90,10 +93,24 @@ const ChannelList = (props) => {
         }
     }
     const dataList = []
+    channelOpmlList = []
     for (let [key, value] of map) {
         dataList.push({
             sectionName: key,
             list: value
+        })
+        let outline = []
+        for (let { data, _ } of value) {
+            outline.push({ $: { title: data.title, htmlUrl: data.htmlLink, type: 'rss', text: data.title, xmlUrl: data.xmlLink } })
+        }
+        channelOpmlList.push({
+            outline: {
+                $: {
+                    title: key,
+                    text: key
+                },
+                outline
+            }
         })
     }
 
@@ -200,15 +217,33 @@ class ActionBar extends Component {
                             }}>
                                 <Text>本地订阅源URL</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity style={{ padding: 12 }} onPress={() => {
+                            <TouchableOpacity style={{ padding: 12 }} onPress={async () => {
                                 this.setState({ showAddView: false })
-                                alert('导入')
+                                const pickerResult = await DocumentPicker.pickSingle({
+                                    presentationStyle: 'fullScreen',
+                                    copyTo: 'cachesDirectory',
+                                })
+                                console.log('pickSingle->', pickerResult)
                             }}>
                                 <Text>opml导入</Text>
                             </TouchableOpacity>
                             <TouchableOpacity style={{ padding: 12 }} onPress={() => {
                                 this.setState({ showAddView: false })
-                                alert('导出')
+                                // 构建opml文件
+                                let obj = {
+                                    opml: {
+                                        $: {
+                                            version: '2.0'
+                                        },
+                                        head: {
+                                            title: 'XiangKan'
+                                        },
+                                        body: channelOpmlList
+                                    }
+                                }
+                                let builder = new xml2js.Builder()
+                                let xml = builder.buildObject(obj)
+                                console.log('obj->xml\n', xml)
                             }}>
                                 <Text>opml导出</Text>
                             </TouchableOpacity>
