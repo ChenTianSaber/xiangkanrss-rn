@@ -7,7 +7,7 @@ import { ScrollView, Text, TouchableOpacity, View, Image, RefreshControl, Device
 import { Badge, Colors, ExpandableSection, Hint } from 'react-native-ui-lib'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 import * as rssParser from 'react-native-rss-parser'
-import { insertRSSItem, queryChannels, queryRSSItemByReadState, updateChannelLastUpdated } from '../database/RealmManager'
+import { insertChannel, insertRSSItem, queryChannels, queryRSSItemByReadState, updateChannelLastUpdated } from '../database/RealmManager'
 import DocumentPicker from 'react-native-document-picker'
 import RNFetchBlob from 'rn-fetch-blob'
 
@@ -223,6 +223,25 @@ class ActionBar extends Component {
                                     copyTo: 'cachesDirectory',
                                 })
                                 console.log('pickSingle->', pickerResult)
+                                RNFetchBlob.fs.readFile(pickerResult.fileCopyUri, 'utf8').then((data) => {
+                                    console.log('成功:\n', data)
+                                    // 转成obj
+                                    let parseString = xml2js.parseString
+                                    parseString(data, (err, result) => {
+                                        console.log('parseString->\n', JSON.stringify(result))
+                                        let outlineData = result.opml.body[0].outline
+                                        for (let outline of outlineData) {
+                                            console.log('分类——>', outline.$.title)
+                                            for (let channel of outline.outline) {
+                                                console.log('订阅源——>', channel.$)
+                                                // 请求channel数据并导入数据库
+                                            }
+                                        }
+                                    })
+                                }).catch((e) => {
+                                    console.log('读取失败', e)
+                                    alert('失败')
+                                })
                             }}>
                                 <Text>opml导入</Text>
                             </TouchableOpacity>
