@@ -9,6 +9,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons'
 import * as rssParser from 'react-native-rss-parser'
 import { insertRSSItem, queryChannels, queryRSSItemByReadState, updateChannelLastUpdated } from '../database/RealmManager'
 import DocumentPicker from 'react-native-document-picker'
+import RNFetchBlob from 'rn-fetch-blob'
 
 var moment = require('moment')
 var cheerio = require('cheerio')
@@ -104,13 +105,11 @@ const ChannelList = (props) => {
             outline.push({ $: { title: data.title, htmlUrl: data.htmlLink, type: 'rss', text: data.title, xmlUrl: data.xmlLink } })
         }
         channelOpmlList.push({
-            outline: {
-                $: {
-                    title: key,
-                    text: key
-                },
-                outline
-            }
+            $: {
+                title: key,
+                text: key
+            },
+            outline
         })
     }
 
@@ -230,6 +229,7 @@ class ActionBar extends Component {
                             <TouchableOpacity style={{ padding: 12 }} onPress={() => {
                                 this.setState({ showAddView: false })
                                 // 构建opml文件
+                                let outline = channelOpmlList
                                 let obj = {
                                     opml: {
                                         $: {
@@ -238,12 +238,24 @@ class ActionBar extends Component {
                                         head: {
                                             title: 'XiangKan'
                                         },
-                                        body: channelOpmlList
+                                        body: {
+                                            outline
+                                        }
                                     }
                                 }
                                 let builder = new xml2js.Builder()
                                 let xml = builder.buildObject(obj)
                                 console.log('obj->xml\n', xml)
+
+                                let filePath = `${RNFetchBlob.fs.dirs.DownloadDir}/xiangkan.opml`
+                                console.log('保存的地址\n', filePath)
+                                RNFetchBlob.fs.writeFile(filePath, xml, 'utf8').then(() => {
+                                    console.log('写入成功')
+                                    alert('成功')
+                                }).catch((e) => {
+                                    console.log('写入失败->', e)
+                                    alert('写入失败，看下权限开了没')
+                                })
                             }}>
                                 <Text>opml导出</Text>
                             </TouchableOpacity>
