@@ -227,16 +227,54 @@ class ActionBar extends Component {
                                     console.log('成功:\n', data)
                                     // 转成obj
                                     let parseString = xml2js.parseString
-                                    parseString(data, (err, result) => {
+                                    parseString(data, async (err, result) => {
                                         console.log('parseString->\n', JSON.stringify(result))
                                         let outlineData = result.opml.body[0].outline
+                                        console.log('请求开始')
                                         for (let outline of outlineData) {
                                             console.log('分类——>', outline.$.title)
                                             for (let channel of outline.outline) {
                                                 console.log('订阅源——>', channel.$)
                                                 // 请求channel数据并导入数据库
+                                                // 请求链接
+                                                let response = await fetch(channel.$.xmlUrl)
+                                                let responseData = await response.text()
+                                                let rss = rssParser.parse(responseData)
+                                                // 展示订阅源的数据
+                                                // console.log(rss.title)
+                                                // console.log(rss.items.length)
+                                                // 请求订阅源的icon
+                                                let webUrl = rss.links[0].url.split("//")[1].split("?")[0].split("/")[0]
+                                                let iconUrl = `https://api.iowen.cn/favicon/${webUrl}.png`
+                                                console.log("iconurl -> ", iconUrl)
+
+                                                let res = await RNFetchBlob.config({ trusty: true, fileCache: true, appendExt: 'png' }).fetch("GET", iconUrl)
+                                                let status = res.info().status
+                                                if (status == 200) {
+                                                    let iconPath = res.path()
+                                                    console.log('成功了->', iconPath)
+                                                    // 组装数据，进入编辑页面
+                                                    let dbChannel = {
+                                                        title: rss.title,
+                                                        type: rss.type,
+                                                        contentType: 0,
+                                                        xmlLink: channel.$.xmlUrl,
+                                                        htmlLink: rss.links[0].url,
+                                                        description: rss.description,
+                                                        lastUpdated: moment().format(),
+                                                        fold: outline.$.title,
+                                                        readMode: 0,
+                                                        icon: Platform.OS == 'ios' ? `${iconPath}` : `file://${iconPath}`
+                                                    }
+                                                    let items = rss.items
+                                                    console.log('channel->', dbChannel)
+                                                    console.log('items->', items.length)
+                                                } else {
+                                                    console.log('出错了')
+                                                }
                                             }
                                         }
+                                        console.log('请求完毕')
                                     })
                                 }).catch((e) => {
                                     console.log('读取失败', e)
