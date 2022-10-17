@@ -239,8 +239,9 @@ class ActionBar extends Component {
                                                 // 请求链接
                                                 let response = await fetch(channel.$.xmlUrl)
                                                 let responseData = await response.text()
-                                                let rss = rssParser.parse(responseData)
-                                                // 展示订阅源的数据
+                                                // console.log(responseData)
+                                                let rss = await rssParser.parse(responseData)
+                                                // // 展示订阅源的数据
                                                 // console.log(rss.title)
                                                 // console.log(rss.items.length)
                                                 // 请求订阅源的icon
@@ -269,12 +270,51 @@ class ActionBar extends Component {
                                                     let items = rss.items
                                                     console.log('channel->', dbChannel)
                                                     console.log('items->', items.length)
+                                                    // 存入数据库
+                                                    try {
+                                                        insertChannel(dbChannel)
+                                                        for (let item of items) {
+
+                                                            let content = item.content ? item.content : (item.description ? item.description : "")
+                                                            let description = content.replace(/<[^>]+>/g, "").replace(/(^\s*)|(\s*$)/g, "").substring(0, 300)
+
+                                                            // 获取第一张图当封面
+                                                            let htmlParser = cheerio.load(content)
+                                                            let cover = htmlParser('img').attr('src')
+                                                            cover = cover ? cover : ''
+
+                                                            console.log('cover ->', cover)
+
+                                                            try {
+                                                                insertRSSItem({
+                                                                    title: item.title,
+                                                                    link: item.links[0].url,
+                                                                    description: description,
+                                                                    content: content,
+                                                                    author: item.authors[0] ? item.authors[0].name : '',
+                                                                    published: item.published ? item.published : moment().format(),
+                                                                    channelXmlLink: dbChannel.xmlLink,
+                                                                    channelTitle: dbChannel.title,
+                                                                    channelIcon: dbChannel.icon,
+                                                                    readState: 0,
+                                                                    cover: cover
+                                                                })
+                                                            } catch (e) {
+                                                                console.log('保存Item失败->', e)
+                                                            }
+                                                        }
+                                                        console.log('保存成功')
+                                                    } catch (e) {
+                                                        console.log('保存数据库出错')
+                                                    }
                                                 } else {
                                                     console.log('出错了')
                                                 }
                                             }
                                         }
                                         console.log('请求完毕')
+                                        // 刷新
+                                        DeviceEventEmitter.emit('REFRESH')
                                     })
                                 }).catch((e) => {
                                     console.log('读取失败', e)
