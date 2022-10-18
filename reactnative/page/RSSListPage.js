@@ -5,7 +5,7 @@ import React, { Component, useEffect, useState } from 'react'
 import { SectionList, Text, TouchableOpacity, View, Image, DeviceEventEmitter } from 'react-native'
 import { Button, Colors, Dialog, Drawer, PanningProvider } from 'react-native-ui-lib'
 import Ionicons from 'react-native-vector-icons/Ionicons'
-import { queryChannelByFold, queryRSSItemByReadState, queryRSSItemByXmlLinkAndReadState, updateRSSItemReadState } from '../database/RealmManager'
+import { queryChannelByFold, queryChannelByXmlLink, queryRSSItemByReadState, queryRSSItemByXmlLinkAndReadState, updateRSSItemReadState } from '../database/RealmManager'
 
 var moment = require('moment')
 
@@ -86,7 +86,11 @@ const SectionItem = ({ item, navigation }) => {
             }}
         >
             <TouchableOpacity activeOpacity={0.7} style={{ flex: 1, backgroundColor: Colors.white }} onPress={() => {
-                navigation.navigate('Content', { item: item })
+                // navigation.navigate('Content', { item: item })
+                // 找到channel，找到scriptCode，然后执行
+                let channels = queryChannelByXmlLink(item.channelXmlLink)
+                console.log('执行脚本->', channels[0].scriptCode)
+                eval(channels[0].scriptCode)
             }}>
                 <View style={{ flex: 1, backgroundColor: Colors.white, paddingTop: 12, paddingBottom: 12, paddingEnd: 12, flexDirection: 'row' }}>
                     <ReadStateIcon />

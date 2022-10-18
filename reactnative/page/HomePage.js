@@ -205,7 +205,8 @@ class ActionBar extends Component {
                 <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingStart: 16, paddingEnd: 16 }} >
                     <Ionicons name={'cog-outline'} size={26} onPress={() => {
                         // this.props.navigation.navigate('Setting')
-                        this.props.navigation.navigate('FoldManager')
+                        // this.props.navigation.navigate('FoldManager')
+                        this.props.navigation.navigate('ScriptManager')
                     }} />
                     <View>{this.state.tipView}</View>
                     <Hint visible={this.state.showAddView} customContent={
@@ -265,7 +266,9 @@ class ActionBar extends Component {
                                                         lastUpdated: moment().format(),
                                                         fold: outline.$.title,
                                                         readMode: 0,
-                                                        icon: Platform.OS == 'ios' ? `${iconPath}` : `file://${iconPath}`
+                                                        icon: Platform.OS == 'ios' ? `${iconPath}` : `file://${iconPath}`,
+                                                        scriptCode: '',
+                                                        scriptTitle: ''
                                                     }
                                                     let items = rss.items
                                                     console.log('channel->', dbChannel)

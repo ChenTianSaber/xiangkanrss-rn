@@ -91,7 +91,9 @@ const SearchView = (props) => {
                                         lastUpdated: moment().format(),
                                         fold: '',
                                         readMode: 0,
-                                        icon: Platform.OS == 'ios' ? `${iconPath}` : `file://${iconPath}`
+                                        icon: Platform.OS == 'ios' ? `${iconPath}` : `file://${iconPath}`,
+                                        scriptCode: '',
+                                        scriptTitle: ''
                                     }
                                     let items = rss.items
                                     navigation.navigate('EditChannel', { channel: channel, items: items, isAdd: true })

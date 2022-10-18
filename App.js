@@ -12,6 +12,7 @@ import EditChannelPage from './reactnative/page/EditChannelPage'
 import AddChannelPage from './reactnative/page/AddChannelPage'
 import SettingPage from './reactnative/page/SettingPage'
 import FoldManagerPage from './reactnative/page/FoldManagerPage'
+import ScriptManager from './reactnative/page/ScriptManagerPage'
 
 const Stack = createNativeStackNavigator()
 
@@ -26,6 +27,7 @@ const App = () => {
         <Stack.Screen name='Content' component={ContentPage} options={{ title: '详情' }} />
         <Stack.Screen name='Setting' component={SettingPage} options={{ title: '设置' }} />
         <Stack.Screen name='FoldManager' component={FoldManagerPage} options={{ title: '分类管理' }} />
+        <Stack.Screen name='ScriptManager' component={ScriptManager} options={{ title: '分类管理' }} />
       </Stack.Navigator>
     </NavigationContainer>
   )

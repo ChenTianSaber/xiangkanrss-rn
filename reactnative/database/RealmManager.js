@@ -1,9 +1,9 @@
 import Realm from 'realm'
-import { ChannelScheme, FoldScheme, RSSItemScheme } from './RealmScheme'
+import { ChannelScheme, FoldScheme, RSSItemScheme, ScriptScheme } from './RealmScheme'
 
 let realm = new Realm({
     path: "xiangkan",
-    schema: [ChannelScheme, RSSItemScheme, FoldScheme],
+    schema: [ChannelScheme, RSSItemScheme, FoldScheme, ScriptScheme],
 })
 
 /**
@@ -25,6 +25,13 @@ const queryChannelByXmlLink = (xmlLink) => {
  */
 const queryChannelByFold = (fold) => {
     return realm.objects("Channel").filtered(`fold = '${fold}'`)
+}
+
+/**
+ * 通过scriptCode查询channel
+ */
+const queryChannelByScriptCode = (scriptCode) => {
+    return realm.objects("Channel").filtered(`scriptCode = "${scriptCode}"`)
 }
 
 /**
@@ -60,12 +67,14 @@ const updateChannelLastUpdated = (channel, lastUpdated) => {
 /**
  * 更新channel
  */
-const updateChannelInfo = (channel, title, readMode, contentType, fold) => {
+const updateChannelInfo = (channel, title, readMode, contentType, fold, scriptCode, scriptTitle) => {
     realm.write(() => {
         channel.title = title
         channel.readMode = readMode
         channel.contentType = contentType
         channel.fold = fold
+        channel.scriptCode = scriptCode
+        channel.scriptTitle = scriptTitle
     })
 }
 
@@ -75,6 +84,16 @@ const updateChannelInfo = (channel, title, readMode, contentType, fold) => {
 const updateChannelFold = (channel, fold) => {
     realm.write(() => {
         channel.fold = fold
+    })
+}
+
+/**
+ * 更新channel的script
+ */
+const updateChannelScript = (channel, scriptCode, scriptTitle) => {
+    realm.write(() => {
+        channel.scriptCode = scriptCode
+        channel.scriptTitle = scriptTitle
     })
 }
 
@@ -142,6 +161,29 @@ const insertFold = (fold) => {
     })
 }
 
+/**
+ * 查询所有的script
+ */
+const queryScripts = () => {
+    return realm.objects("Script")
+}
+
+/**
+ * 插入Fold
+ */
+const insertScript = (script) => {
+    realm.write(() => {
+        realm.create("Script", script)
+    })
+}
+
+// 删除Script
+const deleteScript = (script) => {
+    realm.write(() => {
+        realm.delete(script)
+    })
+}
+
 export {
     queryChannels,
     queryRSSItemByReadState,
@@ -159,5 +201,10 @@ export {
     insertFold,
     deleteFold,
     queryChannelByFold,
-    updateChannelFold
+    updateChannelFold,
+    queryScripts,
+    insertScript,
+    queryChannelByScriptCode,
+    updateChannelScript,
+    deleteScript
 }

@@ -18,12 +18,21 @@ const EditChannelPage = (props) => {
     const [readMode, setReadMode] = useState(channel.readMode)
     const [contentType, setContentType] = useState(channel.contentType)
     const [fold, setFold] = useState(channel.fold)
+    const [scriptCode, setScriptCode] = useState(channel.scriptCode)
+    const [scriptTitle, setScriptTitle] = useState(channel.scriptTitle)
 
     useEffect(() => {
         if (props.route.params?.selectData) {
             // 绑定分类
             console.log('selectData->', props.route.params.selectData)
             setFold(props.route.params.selectData.title)
+        }
+
+        if (props.route.params?.selectScript) {
+            // 绑定脚本
+            console.log('selectScript->', props.route.params.selectScript)
+            setScriptCode(props.route.params.selectScript.code)
+            setScriptTitle(props.route.params.selectScript.title)
         }
     })
 
@@ -97,6 +106,18 @@ const EditChannelPage = (props) => {
                     </View>
                 </TouchableOpacity>
 
+                {/* 选择脚本 */}
+                <TouchableOpacity onPress={() => {
+                    // 进入脚本管理页面
+                    navigation.navigate('ScriptManager', { canSelect: true })
+                }} activeOpacity={0.8} style={{ width: '100%', marginTop: 24, flexDirection: 'row', marginTop: 32 }}>
+                    <Text style={{ fontSize: 16, fontWeight: 'bold', color: Colors.grey1 }}>选择脚本:</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <Text style={{ color: '#262626', fontSize: 16, marginStart: 16 }}>{scriptTitle}</Text>
+                        <Ionicons name='chevron-forward' size={20} color={Colors.grey30} />
+                    </View>
+                </TouchableOpacity>
+
                 <TouchableOpacity activeOpacity={0.7} onPress={async () => {
                     setComfirmDelete(true)
                 }} style={{ width: '100%', padding: 10, borderRadius: 8, backgroundColor: Colors.red40, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 32 }}>
@@ -114,10 +135,12 @@ const EditChannelPage = (props) => {
                             channel.readMode = readMode
                             channel.contentType = contentType
                             channel.fold = fold
+                            channel.scriptCode = scriptCode
+                            channel.scriptTitle = scriptTitle
                             insertChannel(channel)
                         } else {
                             // 更新数据
-                            updateChannelInfo(channel, title, readMode, contentType, fold)
+                            updateChannelInfo(channel, title, readMode, contentType, fold, scriptCode, scriptTitle)
                         }
                         console.log(`保存成功: ${channel.title}`)
 

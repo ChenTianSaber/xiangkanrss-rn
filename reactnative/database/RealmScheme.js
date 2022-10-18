@@ -11,7 +11,9 @@ export const ChannelScheme = {
         readMode: 'int', // 0：RSS内容，1：网页模式
         contentType: 'int', // 0: 文章 1：视频 2：图集
         fold: 'string',
-        icon: 'string'
+        icon: 'string',
+        scriptCode: 'string',
+        scriptTitle: 'string'
     }
 }
 
@@ -38,5 +40,15 @@ export const FoldScheme = {
     primaryKey: 'title',
     properties: {
         title: 'string',
+    }
+}
+
+export const ScriptScheme = {
+    name: 'Script',
+    primaryKey: 'code',
+    properties: {
+        code: 'string',
+        title: 'string',
+        desc: 'string',
     }
 }
