@@ -34,16 +34,14 @@ const SectionItem = ({ item, navigation }) => {
 
     const ReadStateIcon = () => {
         if (readState == 0) {
-            return (
-                <Ionicons name='ellipse' size={14} color={Colors.blue30} style={{ paddingStart: 8, paddingEnd: 8, paddingTop: 4 }} />
-            )
+            return null
         } else if (readState == 1) {
             return (
-                <Ionicons name='ellipse' size={14} color={Colors.grey50} style={{ paddingStart: 8, paddingEnd: 8, paddingTop: 4 }} />
+                <View style={{ height: '100%', width: 6, backgroundColor: Colors.grey50, borderTopLeftRadius: 6, borderBottomLeftRadius: 6 }} />
             )
         } else {
             return (
-                <Ionicons name='star' size={14} color={Colors.yellow30} style={{ paddingStart: 8, paddingEnd: 8, paddingTop: 4 }} />
+                <View style={{ height: '100%', width: 6, backgroundColor: Colors.yellow50, borderTopLeftRadius: 6, borderBottomLeftRadius: 6 }} />
             )
         }
 
@@ -53,7 +51,7 @@ const SectionItem = ({ item, navigation }) => {
         <Drawer
             rightItems={
                 [{
-                    text: '想看', background: Colors.yellow30, onPress: () => {
+                    text: '想看', background: Colors.yellow30, width: 100, onPress: () => {
                         setReadState(2)
                         try {
                             updateRSSItemReadState(item, 2)
@@ -64,7 +62,7 @@ const SectionItem = ({ item, navigation }) => {
                     }
                 }]}
             leftItem={{
-                text: readState != 1 ? '已读' : '未读', background: readState != 0 ? Colors.blue30 : Colors.grey30, onPress: () => {
+                text: readState != 1 ? '已读' : '未读', width: 100, background: readState != 1 ? Colors.grey30 : Colors.blue30, onPress: () => {
                     if (readState != 1) {
                         setReadState(1)
                         try {
@@ -85,14 +83,17 @@ const SectionItem = ({ item, navigation }) => {
                 }
             }}
         >
-            <TouchableOpacity activeOpacity={0.7} style={{ flex: 1, backgroundColor: Colors.white }} onPress={() => {
-                // navigation.navigate('Content', { item: item })
+            <TouchableOpacity activeOpacity={0.7} style={{ flex: 1, backgroundColor: Colors.grey70 }} onPress={() => {
                 // 找到channel，找到scriptCode，然后执行
                 let channels = queryChannelByXmlLink(item.channelXmlLink)
-                console.log('执行脚本->', channels[0].scriptCode)
-                eval(channels[0].scriptCode)
+                if (channels[0].scriptCode == '') {
+                    navigation.navigate('Content', { item: item })
+                } else {
+                    console.log('执行脚本->', channels[0].scriptCode)
+                    eval(channels[0].scriptCode)
+                }
             }}>
-                <View style={{ flex: 1, backgroundColor: Colors.white, paddingTop: 12, paddingBottom: 12, paddingEnd: 12, flexDirection: 'row' }}>
+                {/* <View style={{ flex: 1, backgroundColor: Colors.white, paddingTop: 12, paddingBottom: 12, paddingEnd: 12, flexDirection: 'row' }}>
                     <ReadStateIcon />
                     <View style={{ flex: 1, paddingEnd: 12 }}>
                         <Text style={{ fontSize: 20, fontWeight: 'bold', flex: 1, color: readState == 1 ? Colors.grey40 : Colors.grey1, marginBottom: 4 }}>{item.title}</Text>
@@ -106,7 +107,38 @@ const SectionItem = ({ item, navigation }) => {
                         </View>
                     </View>
                 </View>
-                <View style={{ width: '100%', height: 0.5, backgroundColor: '#e4e4e4', marginStart: 26 }} />
+                <View style={{ width: '100%', height: 0.5, backgroundColor: '#e4e4e4', marginStart: 26 }} /> */}
+                <View style={{ flexDirection: 'row', alignItems: 'center', margin: 6, marginBottom: 0, marginTop: 6 }}>
+                    <ReadStateIcon />
+                    <View style={{ flex: 1, backgroundColor: readState == 0 ? Colors.white : (readState == 2 ? Colors.yellow80 : Colors.grey80), padding: 16, borderWidth: 1, borderColor: "#e4e4e4", borderRadius: 8, borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}>
+                        <Text style={{ fontSize: 17, fontWeight: 'bold', color: readState == 1 ? Colors.grey40 : Colors.grey1 }}>{item.title}</Text>
+                        <View style={{ flexDirection: 'row', flex: 1, marginTop: 4 }}>
+                            <Text style={{ fontSize: 15, marginTop: 6, color: readState == 1 ? Colors.grey40 : Colors.grey20, flex: 1 }} numberOfLines={4}>{item.description}</Text>
+                            {item.cover ? <Image source={{ uri: item.cover }} style={{ width: 90, height: 60, borderRadius: 4, marginStart: 12, marginTop: 8 }} /> : null}
+                        </View>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 16 }}>
+                            <Text style={{ fontSize: 12, color: readState == 1 ? Colors.grey40 : Colors.grey30 }}>{item.author}</Text>
+                            <Text style={{ fontSize: 12, color: readState == 1 ? Colors.grey40 : Colors.grey30 }} numberOfLines={4}>{moment(item.published).format('YYYY-MM-DD h:mm')}</Text>
+                        </View>
+                    </View>
+                </View>
+                {/* <View style={{ width: '100%', paddingStart: 6, flexDirection: 'row', marginTop: 8, marginBottom: 12 }}>
+                    <TouchableOpacity onPress={() => {
+                        
+                    }} style={{ flexDirection: 'row', alignItems: 'center', borderRadius: 8, paddingLeft: 8, paddingEnd: 8 }}>
+                        <Ionicons name='ellipse-outline' size={16} color={Colors.grey30} />
+                        <Text style={{ color: Colors.grey30, fontSize: 12, marginStart: 4 }}>{'未读'}</Text>
+                    </TouchableOpacity>
+
+                    <View style={{ flexDirection: 'row', alignItems: 'center', borderRadius: 8, paddingLeft: 8, paddingEnd: 8, marginStart: 4 }}>
+                        <Ionicons name='ios-star-outline' size={14} color={Colors.grey30} />
+                        <Text style={{ color: Colors.grey30, fontSize: 12, marginStart: 4 }}>{'想看'}</Text>
+                    </View>
+                    <View style={{ flex: 1 }} />
+                    <View style={{ flexDirection: 'row', alignItems: 'center', borderRadius: 8, paddingLeft: 8, paddingEnd: 12 }}>
+                        <Ionicons name='ellipsis-horizontal' size={16} color={Colors.grey30} />
+                    </View>
+                </View> */}
             </TouchableOpacity>
         </Drawer>
     )
@@ -114,9 +146,9 @@ const SectionItem = ({ item, navigation }) => {
 
 const SectionTitle = ({ section }) => {
     return (
-        <View style={{ padding: 16, paddingStart: 8, backgroundColor: Colors.white, flexDirection: 'row', alignItems: 'center' }}>
-            <Image source={{ uri: section.icon }} style={{ width: 18, height: 18, borderRadius: 30 }} />
-            <Text style={{ fontSize: 14, color: Colors.grey10, marginStart: 8 }}>{section.title}</Text>
+        <View style={{ paddingTop: 10, paddingLeft: 6, paddingBottom: 10, flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.white }}>
+            <Image source={{ uri: section.icon }} style={{ width: 38, height: 38, borderRadius: 30, borderWidth: 1, borderColor: "#e4e4e4", borderRadius: 38, backgroundColor: Colors.white }} />
+            <Text style={{ fontSize: 15, color: Colors.grey1, marginStart: 8, fontWeight: 'bold' }}>{section.title}</Text>
         </View>
     )
 }
@@ -202,7 +234,7 @@ class RSSListPage extends Component {
 
     render() {
         return (
-            <View style={{ flex: 1, backgroundColor: Colors.white }}>
+            <View style={{ flex: 1, backgroundColor: Colors.grey70 }}>
                 <Dialog
                     visible={this.state.markAllReadDialog}
                     onDismiss={() => this.setState({ markAllReadDialog: false })}
@@ -228,6 +260,10 @@ class RSSListPage extends Component {
                     renderItem={({ item }) => <SectionItem item={item} navigation={this.props.navigation} />}
                     renderSectionHeader={({ section }) => <SectionTitle section={section} />}
                     keyExtractor={(item, index) => item.title}
+                    stickySectionHeadersEnabled={true}
+                    ListFooterComponent={
+                        <View style={{ height: 64 }} />
+                    }
                 />
             </View>
         )
