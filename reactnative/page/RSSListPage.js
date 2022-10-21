@@ -6,10 +6,11 @@ import { SectionList, Text, TouchableOpacity, View, Image, DeviceEventEmitter } 
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { Button, Colors, Dialog, Drawer, PanningProvider } from 'react-native-ui-lib'
 import { queryChannelByFold, queryChannelByXmlLink, queryRSSItemByReadState, queryRSSItemByXmlLinkAndReadState, updateRSSItemReadState } from '../database/RealmManager'
+import Ionicons from 'react-native-vector-icons/Ionicons'
 
 var moment = require('moment')
 
-const SectionItem = ({ item, navigation }) => {
+const SectionItem = ({ item, navigation, section }) => {
 
     const [readState, setReadState] = useState(item.readState)
 
@@ -45,6 +46,46 @@ const SectionItem = ({ item, navigation }) => {
             )
         }
 
+    }
+
+    const ListItem = () => {
+        if (section.contentType == 1) {
+            // 视频
+            return (
+                <View style={{ flex: 1, backgroundColor: readState == 0 ? Colors.white : (readState == 2 ? Colors.yellow80 : Colors.grey80), padding: 16, borderWidth: 1, borderColor: "#e4e4e4", borderRadius: 8, borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}>
+                    <Text style={{ fontSize: 17, fontWeight: 'bold', color: readState == 1 ? Colors.grey40 : Colors.grey1 }}>{item.title}</Text>
+                    <View style={{ width: 240, height: 160, backgroundColor: Colors.grey60, borderRadius: 4, marginTop: 16, justifyContent: 'center', alignItems: 'center' }}>
+                        <Ionicons name='play-circle-outline' size={40} color={Colors.white} />
+                    </View>
+                </View>
+            )
+        } else if (section.contentType == 2) {
+            // 图集
+            return (
+                <View style={{ flex: 1, backgroundColor: readState == 0 ? Colors.white : (readState == 2 ? Colors.yellow80 : Colors.grey80), padding: 16, borderWidth: 1, borderColor: "#e4e4e4", borderRadius: 8, borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}>
+                    <Text style={{ fontSize: 17, fontWeight: 'bold', color: readState == 1 ? Colors.grey40 : Colors.grey1 }}>{item.title}</Text>
+                    <View style={{ width: 240, height: 160, backgroundColor: Colors.grey60, borderRadius: 4, marginTop: 16, justifyContent: 'center', alignItems: 'center' }}>
+                        <Ionicons name='images' size={32} color={Colors.white} />
+                    </View>
+                </View>
+            )
+        } else {
+            // 图文
+            return (
+                <View style={{ flex: 1, backgroundColor: readState == 0 ? Colors.white : (readState == 2 ? Colors.yellow80 : Colors.grey80), padding: 16, borderWidth: 1, borderColor: "#e4e4e4", borderRadius: 8, borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}>
+                    <Text style={{ fontSize: 17, fontWeight: 'bold', color: readState == 1 ? Colors.grey40 : Colors.grey1 }}>{item.title}</Text>
+                    <View style={{ flexDirection: 'row', flex: 1, marginTop: 4 }}>
+                        <Text style={{ fontSize: 15, marginTop: 6, color: readState == 1 ? Colors.grey40 : Colors.grey20, flex: 1 }} numberOfLines={4}>{item.description}</Text>
+                        {item.cover ? <Image source={{ uri: item.cover }} style={{ width: 90, height: 60, borderRadius: 4, marginStart: 12, marginTop: 8 }} /> : null}
+                    </View>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 16 }}>
+                        <Text style={{ fontSize: 12, color: readState == 1 ? Colors.grey40 : Colors.grey30 }}>{item.author}</Text>
+                        <Text style={{ fontSize: 12, color: readState == 1 ? Colors.grey40 : Colors.grey30 }} numberOfLines={4}>{moment(item.published).format('YYYY-MM-DD h:mm')}</Text>
+                    </View>
+                </View>
+            )
+
+        }
     }
 
     return (
@@ -95,17 +136,7 @@ const SectionItem = ({ item, navigation }) => {
             }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', margin: 6, marginBottom: 0, marginTop: 6 }}>
                     <ReadStateIcon />
-                    <View style={{ flex: 1, backgroundColor: readState == 0 ? Colors.white : (readState == 2 ? Colors.yellow80 : Colors.grey80), padding: 16, borderWidth: 1, borderColor: "#e4e4e4", borderRadius: 8, borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}>
-                        <Text style={{ fontSize: 17, fontWeight: 'bold', color: readState == 1 ? Colors.grey40 : Colors.grey1 }}>{item.title}</Text>
-                        <View style={{ flexDirection: 'row', flex: 1, marginTop: 4 }}>
-                            <Text style={{ fontSize: 15, marginTop: 6, color: readState == 1 ? Colors.grey40 : Colors.grey20, flex: 1 }} numberOfLines={4}>{item.description}</Text>
-                            {item.cover ? <Image source={{ uri: item.cover }} style={{ width: 90, height: 60, borderRadius: 4, marginStart: 12, marginTop: 8 }} /> : null}
-                        </View>
-                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 16 }}>
-                            <Text style={{ fontSize: 12, color: readState == 1 ? Colors.grey40 : Colors.grey30 }}>{item.author}</Text>
-                            <Text style={{ fontSize: 12, color: readState == 1 ? Colors.grey40 : Colors.grey30 }} numberOfLines={4}>{moment(item.published).format('YYYY-MM-DD h:mm')}</Text>
-                        </View>
-                    </View>
+                    <ListItem />
                 </View>
             </TouchableOpacity>
         </Drawer>
@@ -155,12 +186,14 @@ class RSSListPage extends Component {
 
             for (let i = 0; i < this.allItemlist.length; i++) {
                 let item = this.allItemlist[i]
+                let channels = queryChannelByXmlLink(item.channelXmlLink)
                 if (i == 0) {
                     dataList.push(
                         {
                             title: item.channelTitle,
                             icon: item.channelIcon,
-                            data: [item]
+                            data: [item],
+                            contentType: channels[0].contentType
                         }
                     )
                 } else {
@@ -171,7 +204,8 @@ class RSSListPage extends Component {
                             {
                                 title: item.channelTitle,
                                 icon: item.channelIcon,
-                                data: [item]
+                                data: [item],
+                                contentType: channels[0].contentType
                             }
                         )
                     }
@@ -228,7 +262,7 @@ class RSSListPage extends Component {
                 </Dialog>
                 <SectionList
                     sections={this.state.sectionList}
-                    renderItem={({ item }) => <SectionItem item={item} navigation={this.props.navigation} />}
+                    renderItem={({ item, section }) => <SectionItem item={item} navigation={this.props.navigation} section={section} />}
                     renderSectionHeader={({ section }) => <SectionTitle section={section} />}
                     keyExtractor={(item, index) => item.title}
                     stickySectionHeadersEnabled={true}
