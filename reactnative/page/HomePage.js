@@ -449,7 +449,7 @@ class HomePage extends Component {
 
                 console.log('channel rssData请求完毕->', rssData.title, rssData.items.length)
 
-                updateChannelLastUpdated(moment().format())
+                updateChannelLastUpdated(channel, moment().format())
 
                 for (let item of rssData.items) {
                     let content = item.content ? item.content : (item.description ? item.description : "")
@@ -468,9 +468,9 @@ class HomePage extends Component {
                             content: content,
                             author: item.authors[0] ? item.authors[0].name : '',
                             published: item.published ? item.published : moment().format(),
-                            channelXmlLink: rssData.xmlLink,
-                            channelTitle: rssData.title,
-                            channelIcon: rssData.icon,
+                            channelXmlLink: channel.xmlLink,
+                            channelTitle: channel.title,
+                            channelIcon: channel.icon,
                             readState: 0,
                             cover: cover
                         })
