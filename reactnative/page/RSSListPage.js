@@ -3,8 +3,8 @@
  */
 import React, { Component, useEffect, useState } from 'react'
 import { SectionList, Text, TouchableOpacity, View, Image, DeviceEventEmitter } from 'react-native'
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { Button, Colors, Dialog, Drawer, PanningProvider } from 'react-native-ui-lib'
-import Ionicons from 'react-native-vector-icons/Ionicons'
 import { queryChannelByFold, queryChannelByXmlLink, queryRSSItemByReadState, queryRSSItemByXmlLinkAndReadState, updateRSSItemReadState } from '../database/RealmManager'
 
 var moment = require('moment')
@@ -83,7 +83,7 @@ const SectionItem = ({ item, navigation }) => {
                 }
             }}
         >
-            <TouchableOpacity activeOpacity={0.7} style={{ flex: 1, backgroundColor: Colors.grey70 }} onPress={() => {
+            <TouchableOpacity activeOpacity={1} style={{ flex: 1, backgroundColor: Colors.grey70 }} onPress={() => {
                 // 找到channel，找到scriptCode，然后执行
                 let channels = queryChannelByXmlLink(item.channelXmlLink)
                 if (channels[0].scriptCode == '') {
@@ -93,21 +93,6 @@ const SectionItem = ({ item, navigation }) => {
                     eval(channels[0].scriptCode)
                 }
             }}>
-                {/* <View style={{ flex: 1, backgroundColor: Colors.white, paddingTop: 12, paddingBottom: 12, paddingEnd: 12, flexDirection: 'row' }}>
-                    <ReadStateIcon />
-                    <View style={{ flex: 1, paddingEnd: 12 }}>
-                        <Text style={{ fontSize: 20, fontWeight: 'bold', flex: 1, color: readState == 1 ? Colors.grey40 : Colors.grey1, marginBottom: 4 }}>{item.title}</Text>
-                        <View style={{ flexDirection: 'row', flex: 1 }}>
-                            <Text style={{ fontSize: 15, marginTop: 6, color: readState == 1 ? Colors.grey40 : Colors.grey20, flex: 1 }} numberOfLines={4}>{item.description}</Text>
-                            {item.cover ? <Image source={{ uri: item.cover }} style={{ width: 90, height: 60, borderRadius: 6, marginStart: 12, marginTop: 8 }} /> : null}
-                        </View>
-                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
-                            <Text style={{ fontSize: 12, color: readState == 1 ? Colors.grey40 : Colors.grey30 }}>{item.author}</Text>
-                            <Text style={{ fontSize: 12, color: readState == 1 ? Colors.grey40 : Colors.grey30 }} numberOfLines={4}>{moment(item.published).format('YYYY-MM-DD h:mm')}</Text>
-                        </View>
-                    </View>
-                </View>
-                <View style={{ width: '100%', height: 0.5, backgroundColor: '#e4e4e4', marginStart: 26 }} /> */}
                 <View style={{ flexDirection: 'row', alignItems: 'center', margin: 6, marginBottom: 0, marginTop: 6 }}>
                     <ReadStateIcon />
                     <View style={{ flex: 1, backgroundColor: readState == 0 ? Colors.white : (readState == 2 ? Colors.yellow80 : Colors.grey80), padding: 16, borderWidth: 1, borderColor: "#e4e4e4", borderRadius: 8, borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}>
@@ -122,23 +107,6 @@ const SectionItem = ({ item, navigation }) => {
                         </View>
                     </View>
                 </View>
-                {/* <View style={{ width: '100%', paddingStart: 6, flexDirection: 'row', marginTop: 8, marginBottom: 12 }}>
-                    <TouchableOpacity onPress={() => {
-                        
-                    }} style={{ flexDirection: 'row', alignItems: 'center', borderRadius: 8, paddingLeft: 8, paddingEnd: 8 }}>
-                        <Ionicons name='ellipse-outline' size={16} color={Colors.grey30} />
-                        <Text style={{ color: Colors.grey30, fontSize: 12, marginStart: 4 }}>{'未读'}</Text>
-                    </TouchableOpacity>
-
-                    <View style={{ flexDirection: 'row', alignItems: 'center', borderRadius: 8, paddingLeft: 8, paddingEnd: 8, marginStart: 4 }}>
-                        <Ionicons name='ios-star-outline' size={14} color={Colors.grey30} />
-                        <Text style={{ color: Colors.grey30, fontSize: 12, marginStart: 4 }}>{'想看'}</Text>
-                    </View>
-                    <View style={{ flex: 1 }} />
-                    <View style={{ flexDirection: 'row', alignItems: 'center', borderRadius: 8, paddingLeft: 8, paddingEnd: 12 }}>
-                        <Ionicons name='ellipsis-horizontal' size={16} color={Colors.grey30} />
-                    </View>
-                </View> */}
             </TouchableOpacity>
         </Drawer>
     )
@@ -234,7 +202,7 @@ class RSSListPage extends Component {
 
     render() {
         return (
-            <View style={{ flex: 1, backgroundColor: Colors.grey70 }}>
+            <GestureHandlerRootView style={{ flex: 1, backgroundColor: Colors.grey70 }}>
                 <Dialog
                     visible={this.state.markAllReadDialog}
                     onDismiss={() => this.setState({ markAllReadDialog: false })}
@@ -246,10 +214,13 @@ class RSSListPage extends Component {
                             this.setState({ markAllReadDialog: false })
 
                             for (item of this.allItemlist) {
-                                // 除去想看的
-                                if (item.readState == 0) {
-                                    item.readState = 1
-                                    updateRSSItemReadState(item, 1)
+                                try {
+                                    // 除去想看的
+                                    if (item.readState == 0) {
+                                        updateRSSItemReadState(item, 1)
+                                    }
+                                } catch (e) {
+                                    console.log('失败->', e)
                                 }
                             }
                         }} />
@@ -265,7 +236,7 @@ class RSSListPage extends Component {
                         <View style={{ height: 64 }} />
                     }
                 />
-            </View>
+            </GestureHandlerRootView>
         )
     }
 }
