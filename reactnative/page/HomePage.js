@@ -437,7 +437,7 @@ class HomePage extends Component {
      * 刷新订阅源的数据
      */
     refreshChannelData = async () => {
-        for (channel of this.allChannelList) {
+        for (let channel of this.allChannelList) {
             // 变化TipView
             this.updateTipView(
                 <Text>{`正在更新：[${this.allChannelList.indexOf(channel) + 1}/${this.allChannelList.length}]`}</Text>

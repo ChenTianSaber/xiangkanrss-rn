@@ -2,7 +2,7 @@
  * 订阅源内容列表
  */
 import React, { Component } from 'react'
-import { View, DeviceEventEmitter, Platform, Linking } from 'react-native'
+import { View, DeviceEventEmitter, Platform, Linking, StatusBar } from 'react-native'
 import WebView from 'react-native-webview'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 import { Colors } from 'react-native-ui-lib'
@@ -27,23 +27,35 @@ class ActionBar extends Component {
   render() {
     const { item } = this.props
     return (
-      <View style={{ width: '100%', height: 58, backgroundColor: '#f2f2f2' }}>
+      <View style={{ width: '100%', height: 58, position: 'absolute', bottom: 24 }}>
         <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingStart: 16, paddingEnd: 16 }} >
-          {this.state.readState == 2 ? <Ionicons name={'ios-star'} size={26} color={Colors.yellow30} onPress={() => {
-            this.setState({ readState: 0 })
-            DeviceEventEmitter.emit('UPDATE_ITEM_READ_STATE', { title: item.title, state: 0 })
-          }} /> : <Ionicons name={'ios-star-outline'} size={26} onPress={() => {
-            this.setState({ readState: 2 })
-            DeviceEventEmitter.emit('UPDATE_ITEM_READ_STATE', { title: item.title, state: 2 })
-          }} />}
-          {/* ellipse ios-star ios-star-outline*/}
-          {this.state.readState == 1 ? <Ionicons name={'ellipse'} size={26} color={Colors.grey40} onPress={() => {
-            this.setState({ readState: 0 })
-            DeviceEventEmitter.emit('UPDATE_ITEM_READ_STATE', { title: item.title, state: 0 })
-          }} /> : <Ionicons name={'ellipse-outline'} size={26} onPress={() => {
-            this.setState({ readState: 1 })
-            DeviceEventEmitter.emit('UPDATE_ITEM_READ_STATE', { title: item.title, state: 1 })
-          }} />}
+          <View style={{ width: 50, height: 50, backgroundColor: Colors.grey80, borderRadius: 8, borderWidth: 1, borderColor: Colors.grey50, justifyContent: 'center', alignItems: 'center' }}>
+            <Ionicons name={'md-arrow-back-sharp'} size={20} color={Colors.black} onPress={() => {
+              this.props.navigation.goBack()
+            }} />
+          </View>
+
+          <View style={{ width: 100, height: 50, backgroundColor: Colors.grey80, borderRadius: 8, borderWidth: 1, borderColor: Colors.grey50, flexDirection: 'row' }}>
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+              {this.state.readState == 2 ? <Ionicons name={'ios-star'} size={20} color={Colors.yellow30} onPress={() => {
+                this.setState({ readState: 0 })
+                DeviceEventEmitter.emit('UPDATE_ITEM_READ_STATE', { title: item.title, state: 0 })
+              }} /> : <Ionicons name={'ios-star-outline'} size={20} color={Colors.black} onPress={() => {
+                this.setState({ readState: 2 })
+                DeviceEventEmitter.emit('UPDATE_ITEM_READ_STATE', { title: item.title, state: 2 })
+              }} />}
+            </View>
+            <View style={{ width: 0.5, backgroundColor: Colors.grey50, marginBottom: 8, marginTop: 8 }} />
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+              {this.state.readState == 1 ? <Ionicons name={'ellipse'} size={20} color={Colors.grey40} onPress={() => {
+                this.setState({ readState: 0 })
+                DeviceEventEmitter.emit('UPDATE_ITEM_READ_STATE', { title: item.title, state: 0 })
+              }} /> : <Ionicons name={'ellipse-outline'} size={20} color={Colors.black} onPress={() => {
+                this.setState({ readState: 1 })
+                DeviceEventEmitter.emit('UPDATE_ITEM_READ_STATE', { title: item.title, state: 1 })
+              }} />}
+            </View>
+          </View>
         </View>
         {Platform.OS == 'ios' ? <View style={{ width: 1, height: 20 }} /> : null}
       </View>
@@ -79,6 +91,11 @@ class ContentPage extends Component {
     let channels = queryChannelByXmlLink(item.channelXmlLink)
     let html = this.buildHtml()
     this.setState({ readMode: channels[0].readMode ? channels[0].readMode : 0, html: html })
+
+    // 自定义Header
+    this.props.navigation.setOptions({
+      headerShown: false
+    })
   }
 
   buildHtml = () => {
@@ -119,14 +136,14 @@ class ContentPage extends Component {
 </head>
 
 
-<body class="g-body--post-id">
+<body class="g-body--post-id" style="backgroud-color:'white'">
   <div id="root">
     <div class="comp-style--transition--xlR9 g-comp--AppRouter">
       <div id="g-layout--MasterLayout" class="layout-wrapper--Vux7 g-page--post-id g-layout--MasterLayout">
         <div class="layout-container--xPy7 g-master-layout-container">
           <div class="post-type-header--di69 g-comp--PostHeaderTypeMixed">
             <div class="comp-wrapper--hzQm g-comp--PostHeaderType1Normal">
-              <div class="comp-wrapper--pB2o corner--aoSv g-comp--PostTags">
+              <div style="font-size: 12px;margin-bottom: 2px;" class="comp-wrapper--pB2o corner--aoSv g-comp--PostTags">
                 <span
                   class="comp-wrapper--i1sp tag-link--Y_fH js--top-index-link g-comp--SmartLink-for-span g-comp--undefined g-css--SmartLink">
                   <em class="symbol--ULec">#</em>
@@ -134,7 +151,7 @@ class ContentPage extends Component {
                 </span>
               </div>
               <a href="${item.link}"><h1><span class="comp-wrapper--QaPk g-comp--ColorTitle">${item.title}</span></h1></a>
-              <div class="meta--xggW"><span class="time--GfTd">${moment(item.published).format('YYYY-MM-DD h:mm')}</span><span class="author--pu_v">${item.author}</span></div>
+              <div style="font-size: 10px;margin-top: 10px;"><span class="time--GfTd">${moment(item.published).format('YYYY-MM-DD h:mm')}</span>&nbsp&nbsp&nbsp<span class="author--pu_v">${item.author}</span></div>
             </div>
           </div>
           <div class="page-inner--s_CE">
@@ -146,7 +163,7 @@ class ContentPage extends Component {
                   </div>
                 </div>
               </div>
-              <div class="content-footer--gx_Z">
+              <div style="margin-bottom: 64px;">
                 <div class="comp-wrapper--aETv copyright--Wb4j g-comp--PostCopyright">© 「想看APP」，一个简洁好用的RSS阅读器。</div>
               </div>
             </div>
@@ -164,6 +181,7 @@ class ContentPage extends Component {
     const { item } = this.props.route.params
     return (
       <View style={{ flex: 1, backgroundColor: '#f2f2f2' }}>
+        <StatusBar backgroundColor='white' barStyle={'dark-content'} />
         <WebView
           style={{ flex: 1 }}
           originWhitelist={['*']}
@@ -186,7 +204,7 @@ class ContentPage extends Component {
           }}
         />
         <ProgressBar ref={(view) => this.progressBar = view} />
-        <ActionBar item={item} />
+        <ActionBar item={item} navigation={this.props.navigation} />
       </View >
     )
   }
