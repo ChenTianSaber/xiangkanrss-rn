@@ -24,7 +24,7 @@ const AllSection = ({ navigation, unReadItemsSum, wantReadItemsSum }) => {
     return (
         <View style={{ marginTop: 24 }}>
             <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#656668', paddingStart: 8 }}>所有订阅</Text>
-            <View style={{ width: '100%', height: 113, borderWidth: 1, borderColor: "#e4e4e4", borderRadius: 8, marginTop: 12, backgroundColor: 'white' }}>
+            <View style={{ width: '100%', height: 56 * 3 + 2, borderWidth: 1, borderColor: "#e4e4e4", borderRadius: 8, marginTop: 12, backgroundColor: 'white' }}>
                 {/* 未读 */}
                 <TouchableOpacity onPress={() => {
                     navigation.navigate('RSSList', { readState: 0, title: '所有未读' })
@@ -46,6 +46,20 @@ const AllSection = ({ navigation, unReadItemsSum, wantReadItemsSum }) => {
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         <Ionicons name='ios-star' size={22} color={Colors.yellow30} />
                         <Text style={{ color: '#262626', fontSize: 16, marginStart: 16 }}>{'想看'}</Text>
+                    </View>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        {wantReadItemsSum > 0 ? <Badge label={wantReadItemsSum} size={16} backgroundColor={Colors.blue30} /> : null}
+                        <Ionicons name='chevron-forward' size={20} color={Colors.grey30} />
+                    </View>
+                </TouchableOpacity>
+                <View style={{ width: '100%', height: 1, backgroundColor: '#e4e4e4' }} />
+                {/* 已读 */}
+                <TouchableOpacity onPress={() => {
+                    navigation.navigate('RSSList', { readState: 1, title: '所有已读' })
+                }} activeOpacity={0.8} style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingStart: 16, paddingEnd: 16 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <Ionicons name='ios-star' size={22} color={Colors.yellow30} />
+                        <Text style={{ color: '#262626', fontSize: 16, marginStart: 16 }}>{'已读'}</Text>
                     </View>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         {wantReadItemsSum > 0 ? <Badge label={wantReadItemsSum} size={16} backgroundColor={Colors.blue30} /> : null}
@@ -224,7 +238,7 @@ class ActionBar extends Component {
                                         copyTo: 'cachesDirectory',
                                     })
                                     console.log('pickSingle->', pickerResult)
-                                    RNFetchBlob.fs.readFile(pickerResult.fileCopyUri, 'utf8').then((data) => {
+                                    RNFetchBlob.fs.readFile(Platform.OS == 'ios' ? pickerResult.fileCopyUri.replace('file://', '') : pickerResult.fileCopyUri, 'utf8').then((data) => {
                                         console.log('成功:\n', data)
                                         // 转成obj
                                         let parseString = xml2js.parseString
@@ -352,7 +366,7 @@ class ActionBar extends Component {
                                 let xml = builder.buildObject(obj)
                                 console.log('obj->xml\n', xml)
 
-                                let filePath = `${RNFetchBlob.fs.dirs.DownloadDir}/xiangkan.opml`
+                                let filePath = Platform.OS == 'android' ? `${RNFetchBlob.fs.dirs.DownloadDir}/xiangkan.opml` : `${RNFetchBlob.fs.dirs.DocumentDir}/xiangkan.opml`
                                 console.log('保存的地址\n', filePath)
                                 RNFetchBlob.fs.writeFile(filePath, xml, 'utf8').then(() => {
                                     console.log('写入成功')
